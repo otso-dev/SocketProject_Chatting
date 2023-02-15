@@ -15,10 +15,16 @@ public class SocketServer extends Thread{
 	
 	
 	private Socket socket;
+	
 	private List<SocketServer>  socketList = new ArrayList<>();
+	
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	private Gson gson;
+	
+	private String username;
+	private String roomname;
+	
 	public SocketServer(Socket socket) {
 		this.socket = socket;
 		socketList.add(this);
@@ -31,6 +37,10 @@ public class SocketServer extends Thread{
 	}
 	
 	private void reciveRequest() {
+		
+	}
+	
+	private void sendResponse() {
 		
 	}
 }
