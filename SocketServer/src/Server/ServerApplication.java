@@ -20,7 +20,6 @@ public class ServerApplication {
 				SocketServer socketServer = new SocketServer(socket);
 				socketServer.start();
 			}
-	
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
