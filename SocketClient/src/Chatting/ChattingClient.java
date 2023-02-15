@@ -13,16 +13,19 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class ChattingClient extends JFrame {
 
 	private JPanel MainPanel;
 	private CardLayout mainCard;
 	private Socket socket;
-	private JTextField userNameField;
+	private JTextField name;
 	private JTextField textField;
 	/**
 	 * Launch the application.
@@ -58,19 +61,31 @@ public class ChattingClient extends JFrame {
 		MainPanel.add(JoinPanel, "JoinPanel");
 		JoinPanel.setLayout(null);
 		
-		userNameField = new JTextField();
-		userNameField.setBounds(138, 333, 116, 21);
-		JoinPanel.add(userNameField);
-		userNameField.setColumns(10);
+		name = new JTextField();
+		name.setBounds(138, 333, 116, 21);
+		JoinPanel.add(name);
+		name.setColumns(10);
 		
 		JButton JoinButton = new JButton("접속");
+		JoinButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
 		JoinButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				String ip = "127.0.0.1";
 				int port = 9090;
+				
 				try {
 					socket = new Socket(ip,port);
+					
+					JOptionPane.showMessageDialog(null, socket.getInetAddress() + "서버 접속"
+							,"접속 완료"
+							,JOptionPane.INFORMATION_MESSAGE);
+					
+					
+					
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
