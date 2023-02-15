@@ -2,20 +2,21 @@ package Chatting;
 
 import java.awt.CardLayout;
 import java.awt.EventQueue;
-import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.swing.JScrollPane;
-import javax.swing.JList;
-import javax.swing.JTextArea;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.Socket;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+
+import Chatting.Dto.RequestDto;
 
 public class ChattingClient extends JFrame {
 
@@ -68,6 +69,9 @@ public class ChattingClient extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				String ip = "127.0.0.1";
 				int port = 9090;
+				String username = userNameField.getText();
+				RequestDto requestDto = new RequestDto("join", username);
+				
 				try {
 					socket = new Socket(ip,port);
 					
