@@ -14,6 +14,8 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
 import javax.swing.JTextArea;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class ChattingClient extends JFrame {
 
@@ -43,16 +45,6 @@ public class ChattingClient extends JFrame {
 	 */
 	public ChattingClient() {
 		
-		try {
-			socket = new Socket("127.0.0.1",9090);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 480, 800);
 		MainPanel = new JPanel();
@@ -72,6 +64,20 @@ public class ChattingClient extends JFrame {
 		userNameField.setColumns(10);
 		
 		JButton JoinButton = new JButton("접속");
+		JoinButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String ip = "127.0.0.1";
+				int port = 9090;
+				try {
+					socket = new Socket(ip,port);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				mainCard.show(MainPanel, "RoomPanel");
+			}
+		});
 		JoinButton.setBounds(149, 378, 97, 23);
 		JoinPanel.add(JoinButton);
 		
