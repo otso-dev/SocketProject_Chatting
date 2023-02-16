@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -19,6 +20,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class ChattingClient extends JFrame {
 
@@ -123,6 +126,15 @@ public class ChattingClient extends JFrame {
 		ChattingScroll.setViewportView(ChatArea);
 		
 		JButton RoomOutButton = new JButton("방 나가기");
+		RoomOutButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				mainCard.show(MainPanel, "RoomPanel");
+				clearFields(null);
+				
+				
+			}
+		});
 		RoomOutButton.setBounds(345, 17, 97, 23);
 		ChattingPanel.add(RoomOutButton);
 		
@@ -135,9 +147,25 @@ public class ChattingClient extends JFrame {
 		ChattingPanel.add(MessageScroll);
 		
 		textField = new JTextField();
+		textField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode()  == KeyEvent.VK_ENTER) {
+					//메시지 보냄
+				}
+			}
+		});
 		MessageScroll.setViewportView(textField);
 		textField.setColumns(10);
 		
 		
+	}
+	private void clearFields(	List<JTextArea> textArea) {
+		for(JTextArea field : textArea) {
+			if(field.getText().isEmpty()) {
+				continue;
+			}
+			field.setText("");
+		}
 	}
 }
