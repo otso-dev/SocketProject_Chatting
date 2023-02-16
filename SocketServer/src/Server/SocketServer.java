@@ -65,7 +65,6 @@ public class SocketServer extends Thread {
 	
 	private void RequestMapping(String request) throws IOException {
 		RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
-		// System.out.println(requestDto+"ServerreciveReq");
 		switch (requestDto.getResource()) {
 		case "join":
 			username = (String) requestDto.getBody();
@@ -75,26 +74,25 @@ public class SocketServer extends Thread {
 
 		case "createRoom":
 			roomname = (String) requestDto.getBody();
-			System.out.println(roomname);
-			
-			for (SocketServer socketServer : socketList) {
-				roomList.add(socketServer.getRoomname());
-			}
-			ResponseDto<?> responseDto = new ResponseDto<List<String>>("createRoom", roomList);
-			System.out.println(responseDto);
-			sendToAll(responseDto);
-			break;
+            if (!roomList.contains(roomname)) {
+                roomList.add(roomname);
+            }
+            ResponseDto<?> responseDto = new ResponseDto<List<String>>("createRoom", roomList);
+            sendToAll(responseDto);
+            break;
 		}
 	}
 	
 	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
 		for (SocketServer socketServer : socketList) {
-			OutputStream outputStream = socketServer.getSocket().getOutputStream();
+			
+			outputStream = socketServer.getSocket().getOutputStream();
 			PrintWriter writer = new PrintWriter(outputStream, true);
-
 			writer.println(response);
 			writer.flush();
+			
+			
 		}
 		
 	}

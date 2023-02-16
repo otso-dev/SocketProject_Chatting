@@ -16,7 +16,8 @@ public class ServerApplication {
 			
 			while(true){
 				Socket socket = serverSocket.accept();
-				System.out.println("연결확인");
+				//System.out.println(socket.getInetAddress()+":"+ socket.toString());
+				//System.out.println("연결확인");
 				SocketServer socketServer = new SocketServer(socket);
 				socketServer.start();
 			}

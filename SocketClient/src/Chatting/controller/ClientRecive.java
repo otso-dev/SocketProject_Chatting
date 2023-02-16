@@ -19,6 +19,7 @@ public class ClientRecive extends Thread{
 	private InputStream inputStream;
 	private Gson gson;
 	
+	
 	@Override
 	public void run() {
 		
@@ -37,15 +38,17 @@ public class ClientRecive extends Thread{
 		inputStream = socket.getInputStream();
 		BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
 		String request = read.readLine();
-		System.out.println(request);
+		//System.out.println(request);
 		ResponseDto<?> responseDto = gson.fromJson(request,ResponseDto.class);
-		System.out.println(responseDto);
+		//System.out.println(responseDto);
 		switch (responseDto.getResource()) {
 		case "createRoom":
+			System.out.println(responseDto);
 			Controller.getInstance().getChattingClient().getRoomListModel().clear();
-			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>) responseDto.getBody());
-			System.out.println("CR: " + Controller.getInstance().getChattingClient().getRoomListModel().hashCode()); 			
-			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
+			Controller.getInstance().getChattingClient().getRoomListModel().addElement("=====<<방목록>>=====");
+			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
+			//System.out.println("CR: " + Controller.getInstance().getChattingClient().getRoomListModel().hashCode()); 			
+			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(1);
 			break;
 
 		default:

@@ -29,24 +29,23 @@ import Chatting.controller.ClientRecive;
 import Chatting.controller.Controller;
 import lombok.Data;
 
-
 @Data
 public class ChattingClient extends JFrame {
 
 	private JPanel MainPanel;
 	private CardLayout mainCard;
 	private JTextField userNameField;
-	private JTextField textField;
+	private JTextField messageInput;
 
 	private Gson gson;
 	private Socket socket;
-	private InputStream inputStream;
-	private OutputStream outputStream;
-	private BufferedReader reader;
-	private PrintWriter writer;
 	private DefaultListModel<String> roomListModel;
 	private JList<String> roomList;
-
+	
+	private String roomname;
+	private String username;
+	
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -87,7 +86,7 @@ public class ChattingClient extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 
 				try {
-					String username = userNameField.getText();
+					username = userNameField.getText();
 					if(username.isBlank()) {
 						JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.","error",JOptionPane.ERROR_MESSAGE);
 						return;
@@ -97,8 +96,8 @@ public class ChattingClient extends JFrame {
 					int port = 9090;
 					socket = new Socket(ip, port);
 					
-					outputStream = socket.getOutputStream();
-					writer = new PrintWriter(outputStream, true);
+					OutputStream outputStream = socket.getOutputStream();
+					PrintWriter writer = new PrintWriter(outputStream, true);
 					RequestDto<?> requestDto = new RequestDto<String>("join", username);
 					writer.println(gson.toJson(requestDto));
 					writer.flush();
@@ -132,11 +131,24 @@ public class ChattingClient extends JFrame {
 		CrateRoomButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				String roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요","방 생성",JOptionPane.INFORMATION_MESSAGE);
-				RequestDto<?> requestDto = new RequestDto<String>("createRoom",roomname);
-				writer.println(gson.toJson(requestDto));
-				//System.out.println(requestDto+"ClientReq");
-				writer.flush();
+				
+				try {
+					roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요","방 생성",JOptionPane.INFORMATION_MESSAGE);
+					if(roomname.isBlank()) {
+						JOptionPane.showMessageDialog(null, "방제목은 공백일 수 없습니다.","error",JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					RequestDto<?> requestDto = new RequestDto<String>("createRoom",roomname);
+					OutputStream outputStream = socket.getOutputStream();
+					PrintWriter writer = new PrintWriter(outputStream);
+					writer.println(gson.toJson(requestDto));
+					writer.flush();
+				
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
 			}
 		});
 		CrateRoomButton.setBounds(0, 0, 97, 751);
@@ -165,9 +177,9 @@ public class ChattingClient extends JFrame {
 		MessageScroll.setBounds(0, 692, 390, 59);
 		ChattingPanel.add(MessageScroll);
 
-		textField = new JTextField();
-		MessageScroll.setViewportView(textField);
-		textField.setColumns(10);
+		messageInput = new JTextField();
+		MessageScroll.setViewportView(messageInput);
+		messageInput.setColumns(10);
 
 	}
 }
