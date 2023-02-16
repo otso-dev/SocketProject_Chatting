@@ -37,6 +37,7 @@ public class ClientRecive extends Thread{
 		inputStream = socket.getInputStream();
 		BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
 		String request = read.readLine();
+		System.out.println(request);
 		ResponseDto<?> responseDto = gson.fromJson(request,ResponseDto.class);
 		System.out.println(responseDto);
 		switch (responseDto.getResource()) {

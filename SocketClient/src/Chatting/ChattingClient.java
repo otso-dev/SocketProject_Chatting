@@ -10,9 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -47,7 +44,6 @@ public class ChattingClient extends JFrame {
 	private OutputStream outputStream;
 	private BufferedReader reader;
 	private PrintWriter writer;
-	private String roomname;
 	private DefaultListModel<String> roomListModel;
 	private JList<String> roomList;
 
@@ -136,7 +132,7 @@ public class ChattingClient extends JFrame {
 		CrateRoomButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요","방 생성",JOptionPane.INFORMATION_MESSAGE);
+				String roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요","방 생성",JOptionPane.INFORMATION_MESSAGE);
 				RequestDto<?> requestDto = new RequestDto<String>("createRoom",roomname);
 				writer.println(gson.toJson(requestDto));
 				//System.out.println(requestDto+"ClientReq");

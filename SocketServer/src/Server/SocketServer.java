@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +19,13 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
-public class SocketServer extends Thread{
+public class SocketServer extends Thread {
+
 	
-	
+
+	private static List<SocketServer> socketList = new ArrayList<>();
+	private static List<String> roomList = new ArrayList<>();
 	private Socket socket;
-	
-	private List<SocketServer>  socketList = new ArrayList<>();
-	
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	private Gson gson;
@@ -37,7 +38,7 @@ public class SocketServer extends Thread{
 		socketList.add(this);
 		gson = new Gson();
 	}
-	
+
 	@Override
 	public void run() {
 		try {
@@ -47,50 +48,62 @@ public class SocketServer extends Thread{
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void reciveRequest() throws IOException {
 		inputStream = socket.getInputStream();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+		
 		while(true) {
 			String request = reader.readLine();
-			RequestDto<?> requestDto = gson.fromJson(request,RequestDto.class);
-			//System.out.println(requestDto+"ServerreciveReq");
-			switch (requestDto.getResource()) {
-			case "join":
-				String username = (String) requestDto.getBody();
-				System.out.println(username);
-				break;
-
-			case"createRoom":
-				roomname = (String) requestDto.getBody();
-				System.out.println(roomname);
-				List<String> roomList = new ArrayList<>();
-				for(SocketServer socketServer : socketList) {
-					roomList.add(socketServer.getRoomname());
-				}
-				ResponseDto<?> responseDto = new ResponseDto<List<String>>("createRoom", roomList);
-				//System.out.println(responseDto);
-				sendToAll(responseDto);
-				break;
+			if(request == null) {
+				throw new ConnectException();
 			}
+			RequestMapping(request);
 		}
-		
-		
+	}
+	
+	
+	private void RequestMapping(String request) throws IOException {
+		RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
+		// System.out.println(requestDto+"ServerreciveReq");
+		switch (requestDto.getResource()) {
+		case "join":
+			username = (String) requestDto.getBody();
+			// ResponseDto<?> responseDto = new ResponseDto<String>("join", username);
+			// sendResponse(responseDto);
+			break;
+
+		case "createRoom":
+			roomname = (String) requestDto.getBody();
+			System.out.println(roomname);
+			
+			for (SocketServer socketServer : socketList) {
+				roomList.add(socketServer.getRoomname());
+			}
+			ResponseDto<?> responseDto = new ResponseDto<List<String>>("createRoom", roomList);
+			System.out.println(responseDto);
+			sendToAll(responseDto);
+			break;
+		}
 	}
 	
 	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
-		for(SocketServer socketServer : socketList) {
-			OutputStream outputStream = socketServer.getOutputStream();
-			PrintWriter writer = new PrintWriter(outputStream);
-			
-			writer.print(response);
+		for (SocketServer socketServer : socketList) {
+			OutputStream outputStream = socketServer.getSocket().getOutputStream();
+			PrintWriter writer = new PrintWriter(outputStream, true);
+
+			writer.println(response);
+			writer.flush();
 		}
+		
 	}
-	private void sendResponse(ResponseDto<?>responseDto) throws IOException{
+
+	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
-		OutputStream outputStream = socket.getOutputStream();
-		PrintWriter writer = new PrintWriter(outputStream);
-		writer.print(response);
+		outputStream = socket.getOutputStream();
+		PrintWriter writer = new PrintWriter(outputStream, true);
+		writer.println(response);
+		writer.flush();
 	}
 }
