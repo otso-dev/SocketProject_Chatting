@@ -9,6 +9,9 @@ import java.net.UnknownHostException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import controller.Controller;
+
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -31,8 +34,8 @@ public class ChattingClient extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ChattingClient frame = new ChattingClient();
-					frame.setVisible(true);
+					Controller.getInstance();
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -44,6 +47,7 @@ public class ChattingClient extends JFrame {
 	 * Create the frame.
 	 */
 	public ChattingClient() {
+		this.setVisible(true);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 480, 800);
