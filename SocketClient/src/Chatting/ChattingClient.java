@@ -21,6 +21,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.google.gson.Gson;
 
@@ -28,6 +30,8 @@ import Chatting.Dto.RequestDto;
 import Chatting.controller.ClientRecive;
 import Chatting.controller.Controller;
 import lombok.Data;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 @Data
 public class ChattingClient extends JFrame {
@@ -36,7 +40,8 @@ public class ChattingClient extends JFrame {
 	private CardLayout mainCard;
 	private JTextField userNameField;
 	private JTextField messageInput;
-
+	private JLabel chattingRoomName;
+	
 	private Gson gson;
 	private Socket socket;
 	private DefaultListModel<String> roomListModel;
@@ -126,6 +131,35 @@ public class ChattingClient extends JFrame {
 		roomListModel = new DefaultListModel<>();
 		roomList = new JList<String>(roomListModel);
 		ChattingRoomScroll.setViewportView(roomList);
+		roomList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String chattingRoom = roomList.getSelectedValue();
+				if (e.getClickCount() == 2) {
+					if(chattingRoom != null) {
+						OutputStream outputStream;
+						try {
+							outputStream = socket.getOutputStream();
+							PrintWriter writer = new PrintWriter(outputStream);
+							RequestDto<?> requestDto = new RequestDto<String>("enter", chattingRoom);
+							writer.println(gson.toJson(requestDto));
+							writer.flush();
+
+							chattingRoomName.setText("제목: " + chattingRoom+"의 방");
+							mainCard.show(MainPanel, "ChattingPanel");
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+						
+						//System.out.println("Item:" + roomList.getSelectedValue());
+						
+					}
+		        }
+			}
+			
+		});
 
 		JButton CrateRoomButton = new JButton("방 생성");
 		CrateRoomButton.addMouseListener(new MouseAdapter() {
@@ -159,14 +193,24 @@ public class ChattingClient extends JFrame {
 		ChattingPanel.setLayout(null);
 
 		JScrollPane ChattingScroll = new JScrollPane();
-		ChattingScroll.setBounds(0, 50, 450, 640);
+		ChattingScroll.setBounds(0, 66, 450, 624);
 		ChattingPanel.add(ChattingScroll);
 
 		JTextArea ChatArea = new JTextArea();
 		ChattingScroll.setViewportView(ChatArea);
+		
+		chattingRoomName = new JLabel("label");
+		chattingRoomName.setBounds(0, 0, 450, 68);
+		ChattingPanel.add(chattingRoomName);
 
 		JButton RoomOutButton = new JButton("방 나가기");
-		RoomOutButton.setBounds(345, 17, 97, 23);
+		RoomOutButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				mainCard.show(MainPanel,"RoomPanel");
+			}
+		});
+		RoomOutButton.setBounds(345, 23, 97, 23);
 		ChattingPanel.add(RoomOutButton);
 
 		JButton SendButton = new JButton("전송");
@@ -183,3 +227,14 @@ public class ChattingClient extends JFrame {
 
 	}
 }
+
+
+
+//int index = roomList.locationToIndex(e.getPoint());
+//if (index >= 0) {
+//    Object item = roomList.getModel().getElementAt(index);
+//    System.out.println(item);
+//    if (item != null) {
+//        System.out.println("Item double-clicked: " + item);
+//    }
+//}

@@ -25,6 +25,9 @@ public class SocketServer extends Thread {
 
 	private static List<SocketServer> socketList = new ArrayList<>();
 	private static List<String> roomList = new ArrayList<>();
+	
+	private List<String>chattingUserList;
+	
 	private Socket socket;
 	private InputStream inputStream;
 	private OutputStream outputStream;
@@ -32,6 +35,7 @@ public class SocketServer extends Thread {
 	
 	private String username;
 	private String roomname;
+
 	
 	public SocketServer(Socket socket) {
 		this.socket = socket;
@@ -80,6 +84,18 @@ public class SocketServer extends Thread {
             ResponseDto<?> responseDto = new ResponseDto<List<String>>("createRoom", roomList);
             sendToAll(responseDto);
             break;
+		case "enter":
+			String chattingRoom = (String)requestDto.getBody();
+			chattingUserList = new ArrayList<>();
+			for(String room: roomList) {
+				if(room.equals(chattingRoom)) {
+					chattingUserList.add(username);
+				}
+			}
+			for(int i = 0; i < chattingUserList.size(); i++) {
+				System.out.println(chattingUserList.get(i));
+			}
+			break;
 		}
 	}
 	
