@@ -8,6 +8,8 @@ import java.net.Socket;
 
 import com.google.gson.Gson;
 
+import Chatting.Dto.RequestDto;
+import Chatting.Dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -21,11 +23,25 @@ public class ClientRecive extends Thread{
 	public void run() {
 		
 		try {
-			inputStream = socket.getInputStream();
-			BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
-			
+				inputStream = socket.getInputStream();
+				BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
+				gson = new Gson();
+				
+				while(true) {
+					String request = read.readLine();
+					ResponseDto<?> responseDto = gson.fromJson(request, ResponseDto.class);
+					switch(responseDto.getResource()) {
+					case "join" :
+						 RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
+						 requestDto.getBody();
+						 break;
+					
+					
+					}
+					
+					
+				}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

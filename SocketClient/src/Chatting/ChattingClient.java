@@ -3,6 +3,8 @@ package Chatting;
 import java.awt.CardLayout;
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -11,6 +13,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import com.google.gson.Gson;
+
+import Chatting.Dto.RequestDto;
+import controller.ClientRecive;
 import controller.Controller;
 
 import javax.swing.JTextField;
@@ -33,6 +39,7 @@ public class ChattingClient extends JFrame {
 	private Socket socket;
 	private JTextField name;
 	private JTextField textField;
+	private Gson gson;
 	/**
 	 * Launch the application.
 	 */
@@ -54,6 +61,7 @@ public class ChattingClient extends JFrame {
 	 */
 	public ChattingClient() {
 		this.setVisible(true);
+		gson = new Gson();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 480, 800);
@@ -74,27 +82,29 @@ public class ChattingClient extends JFrame {
 		name.setColumns(10);
 		
 		JButton JoinButton = new JButton("접속");
-		JoinButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
 		JoinButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				String ip = "127.0.0.1";
 				int port = 9090;
-				
 				try {
+					String userId = name.getText();
+					
 					socket = new Socket(ip,port);
+					OutputStream outputStream = socket.getOutputStream();
+					PrintWriter write = new PrintWriter(outputStream, true);
+					RequestDto<?> requestDto = new RequestDto<String>("join", userId );
+					write.println(gson.toJson(requestDto));
+					write.flush();
+					ClientRecive clientRecive = new ClientRecive(socket);
+					clientRecive.start();
 					
-					JOptionPane.showMessageDialog(null, socket.getInetAddress() + "서버 접속"
-							,"접속 완료"
-							,JOptionPane.INFORMATION_MESSAGE);
+				
 					
+		
 					
 					
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				mainCard.show(MainPanel, "RoomPanel");
