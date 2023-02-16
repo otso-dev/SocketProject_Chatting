@@ -1,11 +1,13 @@
 package Chatting.Dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @AllArgsConstructor
+@Builder
 @Data
-public class RequestDto {
+public class RequestDto<T> {
 	private String resource;
-	private String body;
+	private T body;
 }
