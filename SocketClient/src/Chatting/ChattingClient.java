@@ -138,10 +138,13 @@ public class ChattingClient extends JFrame {
 					if (chattingRoom != null) {
 						RequestDto<?> reqEnter = new RequestDto<String>("enter", username, chattingRoom, chattingRoom);
 						sendRequest(reqEnter);
-						// chattingRoomName.setText("제목: "+ chattingRoom + "의 방");
-						// System.out.println("Item:" + roomList.getSelectedValue());
+						chattingRoomName.setText("제목: "+ chattingRoom + "의 방");
+						//System.out.println("Item:" + roomList.getSelectedValue());
+						mainCard.show(MainPanel, "ChattingPanel");
+						//System.out.println("ClientCode: "+mainCard.hashCode());
 					}
 				}
+				
 			}
 
 		});
@@ -156,12 +159,13 @@ public class ChattingClient extends JFrame {
 					JOptionPane.showMessageDialog(null, "방제목은 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				RequestDto<?> reqCreateRoom = new RequestDto<String>("createRoom", null, roomname, roomname);
-				RequestDto<?> reqCreateJoin = new RequestDto<String>("createjoin", username, roomname, roomname);
+				RequestDto<?> reqCreateRoom = new RequestDto<String>("createRoom", username, roomname, roomname);
 				sendRequest(reqCreateRoom);
+				
+				RequestDto<?> reqCreateJoin = new RequestDto<String>("createjoin", username, roomname, roomname);
 				sendRequest(reqCreateJoin);
-
 			}
+			
 		});
 		CrateRoomButton.setBounds(0, 0, 97, 751);
 		RoomPanel.add(CrateRoomButton);
@@ -236,13 +240,15 @@ public class ChattingClient extends JFrame {
 
 	private void sendMenssage() {
 		if (!messageInput.getText().isBlank()) {
-
+			
+			System.out.println(roomname);
 			RequestDto<?> messageReqDto = new RequestDto<String>("sendMessage", username, roomname,
 					messageInput.getText());
-
+			
 			sendRequest(messageReqDto);
-			messageInput.setText("");
+			
 		}
+		messageInput.setText("");
 	}
 }
 

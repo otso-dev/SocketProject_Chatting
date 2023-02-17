@@ -9,22 +9,22 @@ import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 
 import Server.Dto.RequestDto;
 import Server.Dto.ResponseDto;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
 public class SocketServer extends Thread {
 
 	private static List<SocketServer> socketList = new ArrayList<>();
-	private static List<String> roomList = new ArrayList<>();
+	private static Map<String, List<SocketServer>> chatRoomMap = new HashMap<>();
 
-	private List<String> chattingUserList;
 
 	private Socket socket;
 	private InputStream inputStream;
@@ -73,91 +73,74 @@ public class SocketServer extends Thread {
 			// sendResponse(responseDto);
 			break;
 
-		case "createRoom":
-			roomname = (String) requestDto.getBody();
-			if (!roomList.contains(roomname)) {
-				roomList.add(roomname);
-			}
+		 case "createRoom":
+	            roomname = (String) requestDto.getBody();
+	            if (!chatRoomMap.containsKey(roomname)) {
+	                chatRoomMap.put(roomname, new ArrayList<>());
+	            }
+	            chatRoomMap.get(roomname).add(this);
 
-			ResponseDto<?> roomResponseDto = new ResponseDto<List<String>>("createRoom", null, roomname, roomList);
-			sendToAll(roomResponseDto);
-			break;
+	            ResponseDto<?> roomResponseDto = new ResponseDto<List<String>>("createRoom", username, roomname, new ArrayList<String>(chatRoomMap.keySet()));
+	            sendToAll(roomResponseDto);
+	            break;
 
-		case "createjoin":
-			String createroomname = (String) requestDto.getBody();
-			ResponseDto<?> joinResponseDto = new ResponseDto<String>("createjoin", null, null, createroomname);
-			sendChattRoomCreate(joinResponseDto, createroomname);
-			break;
-		case "enter":
-			String chattingRoom = (String) requestDto.getBody();
-			String username = (String) requestDto.getUsername();
-			System.out.println(username);
-			System.out.println(chattingRoom);
-			chattingUserList = new ArrayList<>();
-			for (String room : roomList) {
-				if (room.equals(chattingRoom)) {
-					chattingUserList.add(username);
-				}
-			}
-			ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", username, chattingRoom,
-					chattingUserList);
-			sendChatRoom(chatResponseDto);
-			break;
+	        case "createjoin":
+	            String createroomname = (String) requestDto.getBody();
+	            if (!chatRoomMap.containsKey(createroomname)) {
+	                chatRoomMap.put(createroomname, new ArrayList<>());
+	            }
+	            System.out.println(chatRoomMap.get(createroomname).add(this)); 
 
-		case "sendmessage":
-			String message = (String) requestDto.getBody();
+	            ResponseDto<?> joinResponseDto = new ResponseDto<String>("createjoin", username, roomname, createroomname);
+	            sendToRoom(joinResponseDto, createroomname);
+	            break;
 
-			break;
+	        case "enter":
+	            String chattingRoom = (String) requestDto.getBody();
+	            String username = (String) requestDto.getUsername();
+	            if (!chatRoomMap.containsKey(chattingRoom)) {
+	                chatRoomMap.put(chattingRoom, new ArrayList<>());
+	            }
+	            System.out.println(chatRoomMap.get(chattingRoom).add(this));
+	   
+
+	            ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", username, chattingRoom, null);
+	            sendToRoom(chatResponseDto,chattingRoom);
+	            break;
+
+	        case "sendMessage":
+	            String message = (String) requestDto.getBody();
+	            String chatroom = (String) requestDto.getRoomname();
+	            String username1 = (String)requestDto.getUsername();
+	            System.out.println(chatroom);
+	            ResponseDto<?> messageResponseDto = new ResponseDto<String>("sendMessage", username1, chatroom, message);
+	            sendToRoom(messageResponseDto, chatroom);
+	            break;
 		}
 	}
-
+	
 	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
-		String response = gson.toJson(responseDto);
-		for (SocketServer socketServer : socketList) {
-
-			outputStream = socketServer.getSocket().getOutputStream();
-			PrintWriter writer = new PrintWriter(outputStream, true);
-			writer.println(response);
-			writer.flush();
-		}
-
+	    String response = gson.toJson(responseDto);
+	    for (SocketServer socketServer : socketList) {
+	    	OutputStream outputStream = socketServer.getSocket().getOutputStream();
+	        PrintWriter writer = new PrintWriter(outputStream, true);
+	        writer.println(response);
+	        writer.flush();
+	    }
 	}
 
-	private void sendChattRoomCreate(ResponseDto<?> responseDto, String chattingRoom) throws IOException {
-		String response = gson.toJson(responseDto);
-		for (String room : roomList) {
-			if (room.equals(chattingRoom)) {
-				for (SocketServer socketServer : socketList) {
-					if (socketServer.getUsername().equals(username)) {
-						OutputStream outputStream = socketServer.getSocket().getOutputStream();
-						PrintWriter writer = new PrintWriter(outputStream, true);
-
-						writer.println(response);
-						System.out.println(response);
-						writer.flush();
-					}
-
-				}
-			}
-		}
+	private void sendToRoom(ResponseDto<?> responseDto, String roomname) throws IOException {
+	    String response = gson.toJson(responseDto);
+	    List<SocketServer> socketServers = chatRoomMap.get(roomname);
+	    if (socketServers != null) {
+	        for (SocketServer socketServer : socketServers) {
+	        	outputStream = socketServer.getSocket().getOutputStream();
+		        PrintWriter writer = new PrintWriter(outputStream, true);
+	            writer.println(response);
+	            writer.flush();
+	        }
+	    }
 	}
-
-	private void sendChatRoom(ResponseDto<?>responseDto) throws IOException {
-		String response = gson.toJson(responseDto);
-		for(String name : chattingUserList) {
-			if(name != null) {
-				for(SocketServer socketServer : socketList) {
-					OutputStream outputStream = socketServer.getSocket().getOutputStream();
-					PrintWriter writer = new PrintWriter(outputStream,true);
-					
-					writer.println(response);
-					writer.flush();
-				}
-			}
-			
-		}
-	}
-
 	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
 		outputStream = socket.getOutputStream();
@@ -165,4 +148,57 @@ public class SocketServer extends Thread {
 		writer.println(response);
 		writer.flush();
 	}
+	
 }
+
+
+//	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
+//		String response = gson.toJson(responseDto);
+//		for (SocketServer socketServer : socketList) {
+//
+//			outputStream = socketServer.getSocket().getOutputStream();
+//			PrintWriter writer = new PrintWriter(outputStream, true);
+//			writer.println(response);
+//			writer.flush();
+//		}
+//
+//	}
+
+//	private void sendChattRoomCreate(ResponseDto<?> responseDto, String chattingRoom) throws IOException {
+//		String response = gson.toJson(responseDto);
+//		for (String room : roomList) {
+//			if (room.equals(chattingRoom)) {
+//				for (SocketServer socketServer : socketList) {
+//					if (socketServer.getUsername().equals(username)) {
+//						OutputStream outputStream = socketServer.getSocket().getOutputStream();
+//						PrintWriter writer = new PrintWriter(outputStream, true);
+//
+//						writer.println(response);
+//						System.out.println(response);
+//						writer.flush();
+//					}
+//
+//				}
+//			}
+//		}
+//	}
+
+//	private void sendChatRoom(ResponseDto<?>responseDto) throws IOException {
+//		String response = gson.toJson(responseDto);
+//		for(String user : chattingUserList) {
+//			if(user.equals(username)) {
+//				for(SocketServer socketServer : socketList) {
+//					OutputStream outputStream = socketServer.getSocket().getOutputStream();
+//					PrintWriter writer = new PrintWriter(outputStream, true);
+//
+//					writer.println(response);
+//					System.out.println(response);
+//					writer.flush();
+//				}
+//			}
+//		}
+//	}
+
+
+	
+

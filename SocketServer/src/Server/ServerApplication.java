@@ -3,6 +3,7 @@ package Server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 
 public class ServerApplication {
@@ -23,7 +24,7 @@ public class ServerApplication {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} 
 		
 	}
 	
