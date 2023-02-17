@@ -32,6 +32,8 @@ import Chatting.controller.Controller;
 import lombok.Data;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 @Data
 public class ChattingClient extends JFrame {
@@ -41,16 +43,16 @@ public class ChattingClient extends JFrame {
 	private JTextField userNameField;
 	private JTextField messageInput;
 	private JLabel chattingRoomName;
-	
+	private JTextArea ChatArea;
+
 	private Gson gson;
 	private Socket socket;
 	private DefaultListModel<String> roomListModel;
 	private JList<String> roomList;
-	
+
 	private String roomname;
 	private String username;
-	
-	
+
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -92,24 +94,21 @@ public class ChattingClient extends JFrame {
 
 				try {
 					username = userNameField.getText();
-					if(username.isBlank()) {
-						JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.","error",JOptionPane.ERROR_MESSAGE);
+					if (username.isBlank()) {
+						JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					
+
 					String ip = "127.0.0.1";
 					int port = 9090;
 					socket = new Socket(ip, port);
-					
-					OutputStream outputStream = socket.getOutputStream();
-					PrintWriter writer = new PrintWriter(outputStream, true);
-					RequestDto<?> requestDto = new RequestDto<String>("join", username);
-					writer.println(gson.toJson(requestDto));
-					writer.flush();
+
+					RequestDto<?> reqJoin = new RequestDto<String>("join", null, null, username);
+					sendRequest(reqJoin);
 
 					ClientRecive clientRecive = new ClientRecive(socket);
 					clientRecive.start();
-					
+
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -136,53 +135,32 @@ public class ChattingClient extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				String chattingRoom = roomList.getSelectedValue();
 				if (e.getClickCount() == 2) {
-					if(chattingRoom != null) {
-						OutputStream outputStream;
-						try {
-							outputStream = socket.getOutputStream();
-							PrintWriter writer = new PrintWriter(outputStream);
-							RequestDto<?> requestDto = new RequestDto<String>("enter", chattingRoom);
-							writer.println(gson.toJson(requestDto));
-							writer.flush();
-
-							chattingRoomName.setText("제목: " + chattingRoom+"의 방");
-							mainCard.show(MainPanel, "ChattingPanel");
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						
-						
-						//System.out.println("Item:" + roomList.getSelectedValue());
-						
+					if (chattingRoom != null) {
+						RequestDto<?> reqEnter = new RequestDto<String>("enter", chattingRoom, username, chattingRoom);
+						sendRequest(reqEnter);
+						// chattingRoomName.setText("제목: "+ chattingRoom + "의 방");
+						// System.out.println("Item:" + roomList.getSelectedValue());
 					}
-		        }
+				}
 			}
-			
+
 		});
 
 		JButton CrateRoomButton = new JButton("방 생성");
 		CrateRoomButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				
-				try {
-					roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요","방 생성",JOptionPane.INFORMATION_MESSAGE);
-					if(roomname.isBlank()) {
-						JOptionPane.showMessageDialog(null, "방제목은 공백일 수 없습니다.","error",JOptionPane.ERROR_MESSAGE);
-						return;
-					}
-					RequestDto<?> requestDto = new RequestDto<String>("createRoom",roomname);
-					OutputStream outputStream = socket.getOutputStream();
-					PrintWriter writer = new PrintWriter(outputStream);
-					writer.println(gson.toJson(requestDto));
-					writer.flush();
-				
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+
+				roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요", "방 생성", JOptionPane.INFORMATION_MESSAGE);
+				if (roomname.isBlank()) {
+					JOptionPane.showMessageDialog(null, "방제목은 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
+					return;
 				}
-				
+				RequestDto<?> reqCreateRoom = new RequestDto<String>("createRoom", null, roomname, roomname);
+				RequestDto<?> reqCreateJoin = new RequestDto<String>("createjoin", roomname, username, roomname);
+				sendRequest(reqCreateRoom);
+				sendRequest(reqCreateJoin);
+
 			}
 		});
 		CrateRoomButton.setBounds(0, 0, 97, 751);
@@ -196,9 +174,9 @@ public class ChattingClient extends JFrame {
 		ChattingScroll.setBounds(0, 66, 450, 624);
 		ChattingPanel.add(ChattingScroll);
 
-		JTextArea ChatArea = new JTextArea();
+		ChatArea = new JTextArea();
 		ChattingScroll.setViewportView(ChatArea);
-		
+
 		chattingRoomName = new JLabel("label");
 		chattingRoomName.setBounds(0, 0, 450, 68);
 		ChattingPanel.add(chattingRoomName);
@@ -207,17 +185,31 @@ public class ChattingClient extends JFrame {
 		RoomOutButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				mainCard.show(MainPanel,"RoomPanel");
+				mainCard.show(MainPanel, "RoomPanel");
 			}
 		});
 		RoomOutButton.setBounds(345, 23, 97, 23);
 		ChattingPanel.add(RoomOutButton);
 
 		JButton SendButton = new JButton("전송");
+		SendButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				sendMenssage();
+			}
+		});
 		SendButton.setBounds(388, 692, 66, 59);
 		ChattingPanel.add(SendButton);
 
 		JScrollPane MessageScroll = new JScrollPane();
+		MessageScroll.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					sendMenssage();
+				}
+			}
+		});
 		MessageScroll.setBounds(0, 692, 390, 59);
 		ChattingPanel.add(MessageScroll);
 
@@ -226,9 +218,33 @@ public class ChattingClient extends JFrame {
 		messageInput.setColumns(10);
 
 	}
+
+	private void sendRequest(RequestDto<?> requestDto) {
+		OutputStream outputStream;
+		try {
+			outputStream = socket.getOutputStream();
+			PrintWriter out = new PrintWriter(outputStream, true);
+
+			out.println(gson.toJson(requestDto));
+			out.flush();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	private void sendMenssage() {
+		if (!messageInput.getText().isBlank()) {
+
+			RequestDto<?> messageReqDto = new RequestDto<String>("sendMessage", username, roomname,
+					messageInput.getText());
+
+			sendRequest(messageReqDto);
+			messageInput.setText("");
+		}
+	}
 }
-
-
 
 //int index = roomList.locationToIndex(e.getPoint());
 //if (index >= 0) {

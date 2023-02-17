@@ -21,22 +21,19 @@ import lombok.RequiredArgsConstructor;
 @Data
 public class SocketServer extends Thread {
 
-	
-
 	private static List<SocketServer> socketList = new ArrayList<>();
 	private static List<String> roomList = new ArrayList<>();
-	
-	private List<String>chattingUserList;
-	
+
+	private List<String> chattingUserList;
+
 	private Socket socket;
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	private Gson gson;
-	
+
 	private String username;
 	private String roomname;
 
-	
 	public SocketServer(Socket socket) {
 		this.socket = socket;
 		socketList.add(this);
@@ -56,19 +53,19 @@ public class SocketServer extends Thread {
 	private void reciveRequest() throws IOException {
 		inputStream = socket.getInputStream();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-		
-		while(true) {
+
+		while (true) {
 			String request = reader.readLine();
-			if(request == null) {
+			if (request == null) {
 				throw new ConnectException();
 			}
 			RequestMapping(request);
 		}
 	}
-	
-	
+
 	private void RequestMapping(String request) throws IOException {
 		RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
+		System.out.println(requestDto);
 		switch (requestDto.getResource()) {
 		case "join":
 			username = (String) requestDto.getBody();
@@ -78,39 +75,87 @@ public class SocketServer extends Thread {
 
 		case "createRoom":
 			roomname = (String) requestDto.getBody();
-            if (!roomList.contains(roomname)) {
-                roomList.add(roomname);
-            }
-            ResponseDto<?> responseDto = new ResponseDto<List<String>>("createRoom", roomList);
-            sendToAll(responseDto);
-            break;
+			if (!roomList.contains(roomname)) {
+				roomList.add(roomname);
+			}
+
+			ResponseDto<?> roomResponseDto = new ResponseDto<List<String>>("createRoom", roomList, roomname, null);
+			sendToAll(roomResponseDto);
+			break;
+
+		case "createjoin":
+			String createroomname = (String) requestDto.getBody();
+			ResponseDto<?> joinResponseDto = new ResponseDto<String>("createjoin", null, createroomname, null);
+			sendChattRoomCreate(joinResponseDto, createroomname);
+			break;
 		case "enter":
-			String chattingRoom = (String)requestDto.getBody();
+			String chattingRoom = (String) requestDto.getBody();
+			String username = (String) requestDto.getUsername();
+			System.out.println(username);
+			System.out.println(chattingRoom);
 			chattingUserList = new ArrayList<>();
-			for(String room: roomList) {
-				if(room.equals(chattingRoom)) {
+			for (String room : roomList) {
+				if (room.equals(chattingRoom)) {
 					chattingUserList.add(username);
 				}
 			}
-			for(int i = 0; i < chattingUserList.size(); i++) {
-				System.out.println(chattingUserList.get(i));
-			}
+			ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", chattingUserList, chattingRoom,
+					username);
+			sendChatRoom(chatResponseDto);
+			break;
+
+		case "sendmessage":
+			String message = (String) requestDto.getBody();
+
 			break;
 		}
 	}
-	
+
 	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
 		for (SocketServer socketServer : socketList) {
-			
+
 			outputStream = socketServer.getSocket().getOutputStream();
 			PrintWriter writer = new PrintWriter(outputStream, true);
 			writer.println(response);
 			writer.flush();
-			
+		}
+
+	}
+
+	private void sendChattRoomCreate(ResponseDto<?> responseDto, String chattingRoom) throws IOException {
+		String response = gson.toJson(responseDto);
+		for (String room : roomList) {
+			if (room.equals(chattingRoom)) {
+				for (SocketServer socketServer : socketList) {
+					if (socketServer.getUsername().equals(username)) {
+						OutputStream outputStream = socketServer.getSocket().getOutputStream();
+						PrintWriter writer = new PrintWriter(outputStream, true);
+
+						writer.println(response);
+						System.out.println(response);
+						writer.flush();
+					}
+
+				}
+			}
+		}
+	}
+
+	private void sendChatRoom(ResponseDto<?>responseDto) throws IOException {
+		String response = gson.toJson(responseDto);
+		for(String name : chattingUserList) {
+			if(name != null) {
+				for(SocketServer socketServer : socketList) {
+					OutputStream outputStream = socketServer.getSocket().getOutputStream();
+					PrintWriter writer = new PrintWriter(outputStream,true);
+					
+					writer.println(response);
+					writer.flush();
+				}
+			}
 			
 		}
-		
 	}
 
 	private void sendResponse(ResponseDto<?> responseDto) throws IOException {

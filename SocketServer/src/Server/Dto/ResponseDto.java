@@ -1,6 +1,7 @@
 package Server.Dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @AllArgsConstructor
@@ -8,4 +9,6 @@ import lombok.Data;
 public class ResponseDto<T> {
 	private String resource;
 	private T body;
+	private String roomname;
+	private String username;
 }

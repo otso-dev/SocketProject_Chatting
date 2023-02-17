@@ -9,5 +9,7 @@ import lombok.Data;
 @Data
 public class RequestDto<T> {
 	private String resource;
+	private String roomname;
+	private String username;
 	private T body;
 }
