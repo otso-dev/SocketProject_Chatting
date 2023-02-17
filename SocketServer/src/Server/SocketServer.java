@@ -79,13 +79,13 @@ public class SocketServer extends Thread {
 				roomList.add(roomname);
 			}
 
-			ResponseDto<?> roomResponseDto = new ResponseDto<List<String>>("createRoom", roomList, roomname, null);
+			ResponseDto<?> roomResponseDto = new ResponseDto<List<String>>("createRoom", null, roomname, roomList);
 			sendToAll(roomResponseDto);
 			break;
 
 		case "createjoin":
 			String createroomname = (String) requestDto.getBody();
-			ResponseDto<?> joinResponseDto = new ResponseDto<String>("createjoin", null, createroomname, null);
+			ResponseDto<?> joinResponseDto = new ResponseDto<String>("createjoin", null, null, createroomname);
 			sendChattRoomCreate(joinResponseDto, createroomname);
 			break;
 		case "enter":
@@ -99,8 +99,8 @@ public class SocketServer extends Thread {
 					chattingUserList.add(username);
 				}
 			}
-			ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", chattingUserList, chattingRoom,
-					username);
+			ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", username, chattingRoom,
+					chattingUserList);
 			sendChatRoom(chatResponseDto);
 			break;
 

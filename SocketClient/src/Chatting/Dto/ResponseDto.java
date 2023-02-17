@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class ResponseDto<T> {
 	private String resource;
-	private T body;
-	private String roomname;
 	private String username;
+	private String roomname;
+	private T body;
 }

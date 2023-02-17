@@ -136,7 +136,7 @@ public class ChattingClient extends JFrame {
 				String chattingRoom = roomList.getSelectedValue();
 				if (e.getClickCount() == 2) {
 					if (chattingRoom != null) {
-						RequestDto<?> reqEnter = new RequestDto<String>("enter", chattingRoom, username, chattingRoom);
+						RequestDto<?> reqEnter = new RequestDto<String>("enter", username, chattingRoom, chattingRoom);
 						sendRequest(reqEnter);
 						// chattingRoomName.setText("제목: "+ chattingRoom + "의 방");
 						// System.out.println("Item:" + roomList.getSelectedValue());
@@ -157,7 +157,7 @@ public class ChattingClient extends JFrame {
 					return;
 				}
 				RequestDto<?> reqCreateRoom = new RequestDto<String>("createRoom", null, roomname, roomname);
-				RequestDto<?> reqCreateJoin = new RequestDto<String>("createjoin", roomname, username, roomname);
+				RequestDto<?> reqCreateJoin = new RequestDto<String>("createjoin", username, roomname, roomname);
 				sendRequest(reqCreateRoom);
 				sendRequest(reqCreateJoin);
 
