@@ -52,6 +52,7 @@ public class ChattingClient extends JFrame {
 
 	private String roomname;
 	private String username;
+	private String enterRoomname;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -142,6 +143,7 @@ public class ChattingClient extends JFrame {
 						//System.out.println("Item:" + roomList.getSelectedValue());
 						mainCard.show(MainPanel, "ChattingPanel");
 						//System.out.println("ClientCode: "+mainCard.hashCode());
+						enterRoomname = chattingRoom;
 					}
 				}
 				
@@ -206,27 +208,26 @@ public class ChattingClient extends JFrame {
 		ChattingPanel.add(SendButton);
 
 		JScrollPane MessageScroll = new JScrollPane();
-		MessageScroll.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					sendMenssage();
-				}
-			}
-		});
 		MessageScroll.setBounds(0, 692, 390, 59);
 		ChattingPanel.add(MessageScroll);
 
 		messageInput = new JTextField();
+		messageInput.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+					sendMenssage();
+				}
+			}
+		});
 		MessageScroll.setViewportView(messageInput);
 		messageInput.setColumns(10);
 
 	}
 
 	private void sendRequest(RequestDto<?> requestDto) {
-		OutputStream outputStream;
 		try {
-			outputStream = socket.getOutputStream();
+			OutputStream outputStream = socket.getOutputStream();
 			PrintWriter out = new PrintWriter(outputStream, true);
 
 			out.println(gson.toJson(requestDto));
@@ -241,8 +242,8 @@ public class ChattingClient extends JFrame {
 	private void sendMenssage() {
 		if (!messageInput.getText().isBlank()) {
 			
-			System.out.println(roomname);
-			RequestDto<?> messageReqDto = new RequestDto<String>("sendMessage", username, roomname,
+			System.out.println(enterRoomname);
+			RequestDto<?> messageReqDto = new RequestDto<String>("sendMessage", username, enterRoomname,
 					messageInput.getText());
 			
 			sendRequest(messageReqDto);

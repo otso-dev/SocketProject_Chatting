@@ -89,7 +89,7 @@ public class SocketServer extends Thread {
 	            if (!chatRoomMap.containsKey(createroomname)) {
 	                chatRoomMap.put(createroomname, new ArrayList<>());
 	            }
-	            System.out.println(chatRoomMap.get(createroomname).add(this)); 
+	            //System.out.println(chatRoomMap.get(createroomname).add(this)); 
 
 	            ResponseDto<?> joinResponseDto = new ResponseDto<String>("createjoin", username, roomname, createroomname);
 	            sendToRoom(joinResponseDto, createroomname);
@@ -97,24 +97,24 @@ public class SocketServer extends Thread {
 
 	        case "enter":
 	            String chattingRoom = (String) requestDto.getBody();
-	            String username = (String) requestDto.getUsername();
+	            String enterUsername = (String) requestDto.getUsername();
 	            if (!chatRoomMap.containsKey(chattingRoom)) {
 	                chatRoomMap.put(chattingRoom, new ArrayList<>());
 	            }
-	            System.out.println(chatRoomMap.get(chattingRoom).add(this));
+	            //System.out.println(chatRoomMap.get(chattingRoom).add(this));
 	   
 
-	            ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", username, chattingRoom, null);
+	            ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", enterUsername, chattingRoom, null);
 	            sendToRoom(chatResponseDto,chattingRoom);
 	            break;
 
 	        case "sendMessage":
 	            String message = (String) requestDto.getBody();
-	            String chatroom = (String) requestDto.getRoomname();
+	            String chattingroom = (String) requestDto.getRoomname();
 	            String username1 = (String)requestDto.getUsername();
-	            System.out.println(chatroom);
-	            ResponseDto<?> messageResponseDto = new ResponseDto<String>("sendMessage", username1, chatroom, message);
-	            sendToRoom(messageResponseDto, chatroom);
+	           // System.out.println(chatroom);
+	            ResponseDto<?> messageResponseDto = new ResponseDto<String>("sendMessage", username, roomname, message);
+	            sendToAllInRoom(messageResponseDto, chattingroom);
 	            break;
 		}
 	}
@@ -139,6 +139,13 @@ public class SocketServer extends Thread {
 	            writer.println(response);
 	            writer.flush();
 	        }
+	    }
+	}
+	
+	private void sendToAllInRoom(ResponseDto<?> responseDto, String roomname) throws IOException {
+	    List<SocketServer> socketsInRoom = chatRoomMap.get(roomname);
+	    for (SocketServer socketServer : socketsInRoom) {
+	        socketServer.sendResponse(responseDto);
 	    }
 	}
 	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
