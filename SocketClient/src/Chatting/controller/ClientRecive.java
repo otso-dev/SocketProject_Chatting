@@ -55,20 +55,20 @@ public class ClientRecive extends Thread{
 			break;
 			
 		case "createjoin":
-			System.out.println("createjoin");
-			Controller.getInstance().getChattingClient().getChatArea().setText("");
-			Controller.getInstance().getChattingClient().getChattingRoomName().setText("제목:" + responseDto.getRoomname()+"의 방");
+			//System.out.println("createjoin");
+			//Controller.getInstance().getChattingClient().getChatArea().setText("");
+			Controller.getInstance().getChattingClient().getChattingRoomName().setText("제목:" + responseDto.getCreateRoomname()+"의 방");
 			Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(), "ChattingPanel");
 			//System.out.println("CreateJoin CR: " + Controller.getInstance().getChattingClient().getMainCard().hashCode());
-			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getRoomname()+"방을 생성하였습니다.\n");
+			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getCreateRoomname()+"방을 생성하였습니다.\n");
 			break;
 			
 		case "enter":
-			System.out.println(responseDto);
+			//System.out.println(responseDto);
 			//Controller.getInstance().getChattingClient().getChattingRoomName().setText("제목:" + responseDto.getRoomname()+"의 방");
 			//Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(), "ChattingPanel");
 			//System.out.println("EnterCR: " + Controller.getInstance().getChattingClient().getMainCard().hashCode());
-			Controller.getInstance().getChattingClient().getChatArea().setText(responseDto.getUsername()+"님이 접속하였습니다.\n");
+			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getUsername()+"님이 접속하였습니다.\n");
 			break;
 		case "sendMessage":
 			System.out.println("sendMessage: " + responseDto);

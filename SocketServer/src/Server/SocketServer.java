@@ -72,26 +72,33 @@ public class SocketServer extends Thread {
 			// ResponseDto<?> responseDto = new ResponseDto<String>("join", username);
 			// sendResponse(responseDto);
 			break;
-
 		 case "createRoom":
 	            roomname = (String) requestDto.getBody();
 	            if (!chatRoomMap.containsKey(roomname)) {
 	                chatRoomMap.put(roomname, new ArrayList<>());
 	            }
 	            chatRoomMap.get(roomname).add(this);
-
-	            ResponseDto<?> roomResponseDto = new ResponseDto<List<String>>("createRoom", username, roomname, new ArrayList<String>(chatRoomMap.keySet()));
+	            ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder()
+	            											.resource("createRoom")
+	            											.username(username)
+	            											.createRoomname(roomname)
+	            											.body(new ArrayList<String>(chatRoomMap.keySet()))
+	            											.build();
 	            sendToAll(roomResponseDto);
 	            break;
-
 	        case "createjoin":
 	            String createroomname = (String) requestDto.getBody();
-	            if (!chatRoomMap.containsKey(createroomname)) {
-	                chatRoomMap.put(createroomname, new ArrayList<>());
-	            }
+//	            if (!chatRoomMap.containsKey(createroomname)) {
+//	                chatRoomMap.put(createroomname, new ArrayList<>());
+//	            }
 	            //System.out.println(chatRoomMap.get(createroomname).add(this)); 
-
-	            ResponseDto<?> joinResponseDto = new ResponseDto<String>("createjoin", username, roomname, createroomname);
+	            //"createjoin", username, roomname, createroomname
+	            ResponseDto<?> joinResponseDto = ResponseDto.<String>builder()
+	            											.resource("createjoin")
+	            											.username(username)
+	            											.createRoomname(roomname)
+	            											.body(createroomname)
+	            											.build();
 	            sendToRoom(joinResponseDto, createroomname);
 	            break;
 
@@ -101,19 +108,30 @@ public class SocketServer extends Thread {
 	            if (!chatRoomMap.containsKey(chattingRoom)) {
 	                chatRoomMap.put(chattingRoom, new ArrayList<>());
 	            }
-	            //System.out.println(chatRoomMap.get(chattingRoom).add(this));
+	            chatRoomMap.get(chattingRoom).add(this);
 	   
-
-	            ResponseDto<?> chatResponseDto = new ResponseDto<List<String>>("enter", enterUsername, chattingRoom, null);
+	            //"enter", enterUsername, chattingRoom, null
+	            ResponseDto<?> chatResponseDto = ResponseDto.<List<String>>builder()
+	            											.resource("enter")
+	            											.username(enterUsername)
+	            											.enterRoomname(chattingRoom)
+	            											.body(null)
+	            											.build();
 	            sendToRoom(chatResponseDto,chattingRoom);
 	            break;
 
 	        case "sendMessage":
 	            String message = (String) requestDto.getBody();
-	            String chattingroom = (String) requestDto.getRoomname();
+	            String chattingroom = (String) requestDto.getEnterRoomname();
 	            String username1 = (String)requestDto.getUsername();
 	           // System.out.println(chatroom);
-	            ResponseDto<?> messageResponseDto = new ResponseDto<String>("sendMessage", username, roomname, message);
+	            //"sendMessage", username1, roomname, message
+	            ResponseDto<?> messageResponseDto = ResponseDto.<String>builder()
+	            												.resource("sendMessage")
+	            												.username(username1)
+	            												.enterRoomname(chattingroom)
+	            												.body(message)
+	            												.build();
 	            sendToAllInRoom(messageResponseDto, chattingroom);
 	            break;
 		}

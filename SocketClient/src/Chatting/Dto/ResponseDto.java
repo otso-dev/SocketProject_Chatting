@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-@AllArgsConstructor
+
+@Builder
 @Data
 public class ResponseDto<T> {
 	private String resource;
 	private String username;
-	private String roomname;
+	private String createRoomname;
+	private String enterRoomname;
 	private T body;
 }
