@@ -24,14 +24,12 @@ public class ClientRecive extends Thread{
 	
 	@Override
 	public void run() {
-		
 		try {
 			gson = new Gson();
 			while(true) {
 				reciveRequest();
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -40,41 +38,34 @@ public class ClientRecive extends Thread{
 		inputStream = socket.getInputStream();
 		BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
 		String request = read.readLine();
-		//System.out.println(request);
 		ResponseDto<?> responseDto = gson.fromJson(request,ResponseDto.class);
-		//System.out.println(responseDto);
 		switch (responseDto.getResource()) {
 		case "createRoom":
 			System.out.println(responseDto);
 
 			Controller.getInstance().getChattingClient().getRoomListModel().clear();
-			Controller.getInstance().getChattingClient().getRoomListModel().addElement("=====<<방목록>>=====");
+			Controller.getInstance().getChattingClient().getRoomListModel().addElement("================<<방목록>>================");
 			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
-			//System.out.println("CR: " + Controller.getInstance().getChattingClient().getRoomListModel().hashCode()); 			
 			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
 			break;
 			
 		case "createjoin":
-			//System.out.println("createjoin");
-			//Controller.getInstance().getChattingClient().getChatArea().setText("");
-			Controller.getInstance().getChattingClient().getChattingRoomName().setText("제목:" + responseDto.getCreateRoomname()+"의 방");
-			Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(), "ChattingPanel");
-			//System.out.println("CreateJoin CR: " + Controller.getInstance().getChattingClient().getMainCard().hashCode());
-			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getCreateRoomname()+"방을 생성하였습니다.\n");
+			Controller.getInstance().getChattingClient().getChatArea().setText("");
+			Controller.getInstance().getChattingClient().getChatArea().append("***" + responseDto.getBody() + "***" + "방을 생성하였습니다.\n");
 			break;
 			
 		case "enter":
-			//System.out.println(responseDto);
-			//Controller.getInstance().getChattingClient().getChattingRoomName().setText("제목:" + responseDto.getRoomname()+"의 방");
-			//Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(), "ChattingPanel");
-			//System.out.println("EnterCR: " + Controller.getInstance().getChattingClient().getMainCard().hashCode());
-			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getUsername()+"님이 접속하였습니다.\n");
+			Controller.getInstance().getChattingClient().getChatArea().append("[" + responseDto.getUsername()+ "]" + "님이 접속하였습니다.\n");
 			break;
 		case "sendMessage":
 			System.out.println("sendMessage: " + responseDto);
-			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getUsername() + ": " + responseDto.getBody() + "\n");
+			Controller.getInstance().getChattingClient().getChatArea().append("[" + responseDto.getUsername()+ "]" + ": " + responseDto.getBody() + "\n");
+			break;
+		case "leave":
+			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getUsername() + "님이 " + "["+ responseDto.getEnterRoomname()+"]" + " 방에서 나갔습니다.\n");
 			break;
 		default:
+			System.out.println("해당 요청은 처리 할 수 없습니다.");
 			break;
 		}
 		

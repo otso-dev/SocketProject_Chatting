@@ -32,7 +32,8 @@ public class SocketServer extends Thread {
 	private Gson gson;
 
 	private String username;
-	private String roomname;
+	private String createRoomName;
+	private String enterRoomName;
 
 	public SocketServer(Socket socket) {
 		this.socket = socket;
@@ -69,161 +70,104 @@ public class SocketServer extends Thread {
 		switch (requestDto.getResource()) {
 		case "join":
 			username = (String) requestDto.getBody();
-			// ResponseDto<?> responseDto = new ResponseDto<String>("join", username);
-			// sendResponse(responseDto);
 			break;
 		 case "createRoom":
-	            roomname = (String) requestDto.getBody();
-	            if (!chatRoomMap.containsKey(roomname)) {
-	                chatRoomMap.put(roomname, new ArrayList<>());
+			 createRoomName = (String) requestDto.getBody();
+	            if (!chatRoomMap.containsKey(createRoomName)) {
+	                chatRoomMap.put(createRoomName, new ArrayList<>());
 	            }
-	            chatRoomMap.get(roomname).add(this);
+	            chatRoomMap.get(createRoomName).add(this);
 	            ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder()
 	            											.resource("createRoom")
 	            											.username(username)
-	            											.createRoomname(roomname)
+	            											.createRoomname(createRoomName)
 	            											.body(new ArrayList<String>(chatRoomMap.keySet()))
 	            											.build();
 	            sendToAll(roomResponseDto);
 	            break;
 	        case "createjoin":
 	            String createroomname = (String) requestDto.getBody();
-//	            if (!chatRoomMap.containsKey(createroomname)) {
-//	                chatRoomMap.put(createroomname, new ArrayList<>());
-//	            }
-	            //System.out.println(chatRoomMap.get(createroomname).add(this)); 
-	            //"createjoin", username, roomname, createroomname
+	            String user = (String)requestDto.getUsername();
 	            ResponseDto<?> joinResponseDto = ResponseDto.<String>builder()
 	            											.resource("createjoin")
-	            											.username(username)
-	            											.createRoomname(roomname)
+	            											.username(user)
 	            											.body(createroomname)
 	            											.build();
 	            sendToRoom(joinResponseDto, createroomname);
 	            break;
 
 	        case "enter":
-	            String chattingRoom = (String) requestDto.getBody();
+	            String enterRoom = (String) requestDto.getBody();
 	            String enterUsername = (String) requestDto.getUsername();
-	            if (!chatRoomMap.containsKey(chattingRoom)) {
-	                chatRoomMap.put(chattingRoom, new ArrayList<>());
+	            if (!chatRoomMap.containsKey(enterRoom)) {
+	                chatRoomMap.put(enterRoom, new ArrayList<>());
 	            }
-	            chatRoomMap.get(chattingRoom).add(this);
-	   
-	            //"enter", enterUsername, chattingRoom, null
+	            chatRoomMap.get(enterRoom).add(this);
 	            ResponseDto<?> chatResponseDto = ResponseDto.<List<String>>builder()
 	            											.resource("enter")
 	            											.username(enterUsername)
-	            											.enterRoomname(chattingRoom)
+	            											.enterRoomname(enterRoom)
 	            											.body(null)
 	            											.build();
-	            sendToRoom(chatResponseDto,chattingRoom);
+	            sendToRoom(chatResponseDto,enterRoom);
 	            break;
+	        case "leave":
+	        	String leaveRoomname = (String) requestDto.getBody();
+	        	moveRoom(leaveRoomname);
+	        	break;
 
 	        case "sendMessage":
 	            String message = (String) requestDto.getBody();
-	            String chattingroom = (String) requestDto.getEnterRoomname();
+	            enterRoomName = (String) requestDto.getEnterRoomname();
 	            String username1 = (String)requestDto.getUsername();
-	           // System.out.println(chatroom);
-	            //"sendMessage", username1, roomname, message
+	            
 	            ResponseDto<?> messageResponseDto = ResponseDto.<String>builder()
 	            												.resource("sendMessage")
 	            												.username(username1)
-	            												.enterRoomname(chattingroom)
+	            												.enterRoomname(enterRoomName)
 	            												.body(message)
 	            												.build();
-	            sendToAllInRoom(messageResponseDto, chattingroom);
+	            sendToRoom(messageResponseDto,enterRoomName);
 	            break;
 		}
 	}
 	
-	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
-	    String response = gson.toJson(responseDto);
-	    for (SocketServer socketServer : socketList) {
-	    	OutputStream outputStream = socketServer.getSocket().getOutputStream();
-	        PrintWriter writer = new PrintWriter(outputStream, true);
-	        writer.println(response);
-	        writer.flush();
-	    }
-	}
-
-	private void sendToRoom(ResponseDto<?> responseDto, String roomname) throws IOException {
-	    String response = gson.toJson(responseDto);
-	    List<SocketServer> socketServers = chatRoomMap.get(roomname);
-	    if (socketServers != null) {
-	        for (SocketServer socketServer : socketServers) {
-	        	outputStream = socketServer.getSocket().getOutputStream();
-		        PrintWriter writer = new PrintWriter(outputStream, true);
-	            writer.println(response);
-	            writer.flush();
-	        }
-	    }
-	}
-	
-	private void sendToAllInRoom(ResponseDto<?> responseDto, String roomname) throws IOException {
-	    List<SocketServer> socketsInRoom = chatRoomMap.get(roomname);
-	    for (SocketServer socketServer : socketsInRoom) {
-	        socketServer.sendResponse(responseDto);
-	    }
-	}
 	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
-		outputStream = socket.getOutputStream();
+		OutputStream outputStream = socket.getOutputStream();
 		PrintWriter writer = new PrintWriter(outputStream, true);
 		writer.println(response);
 		writer.flush();
 	}
 	
-}
-
-
-//	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
-//		String response = gson.toJson(responseDto);
-//		for (SocketServer socketServer : socketList) {
-//
-//			outputStream = socketServer.getSocket().getOutputStream();
-//			PrintWriter writer = new PrintWriter(outputStream, true);
-//			writer.println(response);
-//			writer.flush();
-//		}
-//
-//	}
-
-//	private void sendChattRoomCreate(ResponseDto<?> responseDto, String chattingRoom) throws IOException {
-//		String response = gson.toJson(responseDto);
-//		for (String room : roomList) {
-//			if (room.equals(chattingRoom)) {
-//				for (SocketServer socketServer : socketList) {
-//					if (socketServer.getUsername().equals(username)) {
-//						OutputStream outputStream = socketServer.getSocket().getOutputStream();
-//						PrintWriter writer = new PrintWriter(outputStream, true);
-//
-//						writer.println(response);
-//						System.out.println(response);
-//						writer.flush();
-//					}
-//
-//				}
-//			}
-//		}
-//	}
-
-//	private void sendChatRoom(ResponseDto<?>responseDto) throws IOException {
-//		String response = gson.toJson(responseDto);
-//		for(String user : chattingUserList) {
-//			if(user.equals(username)) {
-//				for(SocketServer socketServer : socketList) {
-//					OutputStream outputStream = socketServer.getSocket().getOutputStream();
-//					PrintWriter writer = new PrintWriter(outputStream, true);
-//
-//					writer.println(response);
-//					System.out.println(response);
-//					writer.flush();
-//				}
-//			}
-//		}
-//	}
-
-
 	
+	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
+	    for (SocketServer socketServer : socketList) {
+	    	socketServer.sendResponse(responseDto);
+	    }
+	}
 
+	private void sendToRoom(ResponseDto<?> responseDto, String roomname) throws IOException {
+	    List<SocketServer> socketServers = chatRoomMap.get(roomname);
+	    if (socketServers != null) {
+	        for (SocketServer socketServer : socketServers) {
+	        	socketServer.sendResponse(responseDto);
+	        }
+	    }
+	}
+	
+	private void moveRoom(String enterRoomName) throws IOException {
+	    // 현재 방에서 나가기
+	    List<SocketServer> currentRoom = chatRoomMap.get(enterRoomName);
+	    currentRoom.remove(this);
+	    ResponseDto<?> leaveResponseDto = ResponseDto.<String>builder()
+	    											 .resource("leave")
+	    											 .username(username)
+	    											 .enterRoomname(enterRoomName)
+	    											 .body(null)
+	    											 .build();
+	    sendToRoom(leaveResponseDto, enterRoomName);
+
+	}
+	
+}
