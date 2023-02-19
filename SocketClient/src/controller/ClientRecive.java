@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import com.google.gson.Gson;
 
+import Chatting.ChattingClient;
 import Chatting.Dto.RequestDto;
 import Chatting.Dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class ClientRecive extends Thread{
 	@Override
 	public void run() {
 		
-		try {
+		try {	
 				inputStream = socket.getInputStream();
 				BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
 				gson = new Gson();
@@ -31,10 +32,14 @@ public class ClientRecive extends Thread{
 					String request = read.readLine();
 					ResponseDto<?> responseDto = gson.fromJson(request, ResponseDto.class);
 					switch(responseDto.getResource()) {
-					case "join" :
-						 RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
-						 requestDto.getBody();
-						 break;
+						case "join" :
+							RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
+						 	requestDto.getBody();
+						 	break;
+					case"roomCreate" :
+							RequestDto<?> createrequestDto = gson.fromJson(request, RequestDto.class);
+							Controller.getInstance().getChattingClient().get
+						
 					
 					
 					}

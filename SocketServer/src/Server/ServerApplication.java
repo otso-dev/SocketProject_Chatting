@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import Server.Dto.RequestDto;
+
 
 public class ServerApplication {
 	private final static int PORT = 9090;
