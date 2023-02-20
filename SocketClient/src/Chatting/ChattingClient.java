@@ -144,8 +144,10 @@ public class ChattingClient extends JFrame {
 															.body(enterRoom)
 															.build();
 						sendRequest(reqEnter);
+						ChatArea.setText("");
 						chattingRoomName.setText("제목: " + enterRoom + "의 방");
 						mainCard.show(MainPanel, "ChattingPanel");
+						
 					}
 				}
 
