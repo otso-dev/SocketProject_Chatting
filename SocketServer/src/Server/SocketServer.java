@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.module.ModuleDescriptor.Builder;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -76,9 +77,16 @@ public class SocketServer extends Thread{
 				chattingRoom.put(room, new ArrayList<>());
 			}
 			chattingRoom.get(room).add(this);
-			
+			ResponseDto<?> roomresponseDto = ResponseDto.<List<String>>builder()
+					.resource("roomCreate")
+					.body( new ArrayList<String>(chattingRoom.keySet()))
+					.room(room)
+					.userId(userId)	
+					.roomName(null)
+					.build();
 			//ResponseDto<?> roomresponsDto = new ResponseDto<List<String>>("roomCreate", new ArrayList<String>(chattingRoom.keySet()), room, userId, null); 빌더로
-			//sendResponse(roomresponsDto);
+			sendResponse(roomresponseDto);
+			sendRoomListToAll();
 			break;
 		
 						
@@ -97,6 +105,13 @@ public class SocketServer extends Thread{
 	    for (SocketServer socketServer : socketList) {
 	    	socketServer.sendResponse(responseDto);
 	    }
+	}
+	private void sendRoomListToAll() throws IOException {
+	    ResponseDto<?> responseDto = ResponseDto.<List<String>>builder()
+	            .resource("roomList")
+	            .body(new ArrayList<String>(chattingRoom.keySet()))
+	            .build();
+	    sendToAll(responseDto);
 	}
 	
 }

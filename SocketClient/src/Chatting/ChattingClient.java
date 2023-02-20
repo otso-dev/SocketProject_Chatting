@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -32,7 +33,6 @@ import Chatting.Dto.RequestDto;
 import controller.ClientRecive;
 import controller.Controller;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 public class ChattingClient extends JFrame {
@@ -47,7 +47,8 @@ public class ChattingClient extends JFrame {
 	private Gson gson;
 	private JList<String> roomList;
 	private DefaultListModel<String> roomModel;
-
+	private boolean isFirstRoomLoad = true;
+	
 	private String userId;
 	/**
 	 * Launch the application.
@@ -155,25 +156,24 @@ public class ChattingClient extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		방생성버튼.setIcon(changePlus);	
+		방생성버튼.setIcon(new ImageIcon("C:\\Users\\kim\\Documents\\workspace-spring-tool-suite-4-4.17.0.RELEASE\\SocketProject_Chatting\\plus.png"));	
 		방생성버튼.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				String room = JOptionPane.showInputDialog( null, "방 제목을 여기에 입력", "방 생성하기",JOptionPane.INFORMATION_MESSAGE);
-				if (room != null && !room.isEmpty()) {
-				
-					RequestDto<?> requestDto = RequestDto.<String>builder()
-							.resource("roomCreate")
-							.body(null)
-							.room(room)
-							.userId(room)
-							.roomName(room)
-							.build();            //("roomCreate", null, room, null,null); 빌더로 변경
-						//sendRequest(requestDto);
-						
-						ClientRecive clientRecive = new ClientRecive(socket);
-						clientRecive.start();
+				public void mouseClicked(MouseEvent e) {
+					String room = JOptionPane.showInputDialog( null, "방 제목을 여기에 입력", "방 생성하기",JOptionPane.INFORMATION_MESSAGE);
+					if (room != null && !room.isEmpty()) {
 					
+						RequestDto<?> requestDto = RequestDto.<String>builder()
+								.resource("roomCreate")
+								.body(room)
+								.room(room)
+								.userId(userId)
+								.roomName(room)
+								.build();            //("roomCreate", null, room, null,null); 빌더로 변경
+							
+						sendRequest(requestDto);
+						
+				
 					
 				}
 				
@@ -244,6 +244,24 @@ public class ChattingClient extends JFrame {
 		}
 		
 	}
+	
+	public void setRoomList(List<String> roomList) {
+        if (roomList != null && !roomList.isEmpty()) {
+            DefaultListModel<String> roomModel = new DefaultListModel< String>();
+
+            if (isFirstRoomLoad) {
+                roomModel.addElement("<채팅방 목록>");
+                isFirstRoomLoad = false;
+            }
+
+            for (String room : roomList) {
+                roomModel.addElement(room);
+            }
+
+	            roomList.setModel(roomModel);
+	            roomList.setSelectedIndex(0);
+        }
+    }
 	
 	ImageIcon plus = new ImageIcon("C:\\Users\\ITPS\\Downloads\\plus.png");
 	ImageIcon changePlus = new ImageIcon(plus.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH));
