@@ -1,8 +1,10 @@
 package Chatting;
 
 import java.awt.CardLayout;
-
 import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -11,9 +13,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -29,22 +31,24 @@ import com.google.gson.Gson;
 import Chatting.Dto.RequestDto;
 import controller.ClientRecive;
 import controller.Controller;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 @Data
-@AllArgsConstructor
 public class ChattingClient extends JFrame {
 
+	
 	private JPanel MainPanel;
 	private CardLayout mainCard;
-	private Socket socket;	
-	private JTextField name;
+	private JTextField username_id;
 	private JTextField textField;
-	private Gson gson;
-	private DefaultListModel<String> roomModel;
-	private JList<String> roomList;
 	
+	private Socket socket;	
+	private Gson gson;
+	private JList<String> roomList;
+	private DefaultListModel<String> roomModel;
+
+	private String userId;
 	/**
 	 * Launch the application.
 	 */
@@ -81,10 +85,10 @@ public class ChattingClient extends JFrame {
 		MainPanel.add(JoinPanel, "JoinPanel");
 		JoinPanel.setLayout(null);
 		
-		name = new JTextField();
-		name.setBounds(138, 333, 116, 21);
-		JoinPanel.add(name);
-		name.setColumns(10);
+		username_id = new JTextField();
+		username_id.setBounds(138, 333, 116, 21);
+		JoinPanel.add(username_id);
+		username_id.setColumns(10);
 		
 		JButton JoinButton = new JButton("접속");
 		JoinButton.addMouseListener(new MouseAdapter() {
@@ -93,12 +97,12 @@ public class ChattingClient extends JFrame {
 				String ip = "127.0.0.1";
 				int port = 9090;
 				try {
-					String userId = name.getText();
+					String userId = username_id.getText();
 					
 					socket = new Socket(ip,port);
 					
-					RequestDto<?> requestDto = new RequestDto<String>("join", null, null, userId );
-					sendRequest(requestDto);
+					//RequestDto<?> requestDto = new RequestDto<String>   ("join", null, null, userId, null );  빌더로 교체하기
+					//sendRequest(requestDto);
 						
 					ClientRecive clientRecive = new ClientRecive(socket);
 					clientRecive.start();
@@ -146,23 +150,29 @@ public class ChattingClient extends JFrame {
 		
 		
 		
-		JButton CrateRoomButton = new JButton("방 생성");
-		CrateRoomButton.addMouseListener(new MouseAdapter() {
+		JButton 방생성버튼 = new JButton("");
+		방생성버튼.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		방생성버튼.setIcon(changePlus);	
+		방생성버튼.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				String room = JOptionPane.showInputDialog( null, "방 제목을 여기에 입력", "방 생성하기",JOptionPane.INFORMATION_MESSAGE);
 				if (room != null && !room.isEmpty()) {
 				
-					try {
-					RequestDto<?> requestDto = new RequestDto<String>("roomCreate", null, room, null);
-						sendRequest(requestDto);
+					RequestDto<?> requestDto = RequestDto.<String>builder()
+							.resource("roomCreate")
+							.body(null)
+							.room(room)
+							.userId(room)
+							.roomName(room)
+							.build();            //("roomCreate", null, room, null,null); 빌더로 변경
+						//sendRequest(requestDto);
 						
 						ClientRecive clientRecive = new ClientRecive(socket);
 						clientRecive.start();
-								
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
 					
 					
 				}
@@ -171,8 +181,8 @@ public class ChattingClient extends JFrame {
 			}
 		});
 	
-		CrateRoomButton.setBounds(0, 0, 97, 751);
-		RoomPanel.add(CrateRoomButton);
+		방생성버튼.setBounds(22, 10, 50, 50);
+		RoomPanel.add(방생성버튼);
 		
 		JPanel ChattingPanel = new JPanel();
 		MainPanel.add(ChattingPanel, "ChattingPanel");
@@ -190,7 +200,6 @@ public class ChattingClient extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				mainCard.show(MainPanel, "RoomPanel");
-				clearFields(null);
 				
 				
 			}
@@ -220,22 +229,23 @@ public class ChattingClient extends JFrame {
 		
 		
 	}
-	private void clearFields(	List<JTextArea> textArea) {
-		for(JTextArea field : textArea) {
-			if(field.getText().isEmpty()) {
-				continue;
-			}
-			field.setText("");
+	
+	
+	private void sendRequest(RequestDto<?> requestDto){
+		try {
+			OutputStream outputStream;
+			outputStream =  socket.getOutputStream();
+			
+			PrintWriter write = new PrintWriter(outputStream,true);
+			write.println(gson.toJson(requestDto));
+			write.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		
 	}
 	
-	private void sendRequest(RequestDto<?> requestDto) throws IOException {
-		OutputStream outputStream;
-		outputStream =  socket.getOutputStream();
-		
-		PrintWriter write = new PrintWriter(outputStream,true);
-		write.println(gson.toJson(requestDto));
-		write.flush();
-		write.close(); 
-	}
+	ImageIcon plus = new ImageIcon("C:\\Users\\ITPS\\Downloads\\plus.png");
+	ImageIcon changePlus = new ImageIcon(plus.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH));
+	
 }

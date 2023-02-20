@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -71,17 +72,31 @@ public class SocketServer extends Thread{
 			break;
 		case "roomCreate":
 			room = (String) requestDto.getBody();
-			ResponseDto<?> roomresponDto = new ResponseDto<List<String>>("makeRoom", roomName, room, null);
 			if(!chattingRoom.containsKey(room)) {
 				chattingRoom.put(room, new ArrayList<>());
 			}
 			chattingRoom.get(room).add(this);
+			
+			//ResponseDto<?> roomresponsDto = new ResponseDto<List<String>>("roomCreate", new ArrayList<String>(chattingRoom.keySet()), room, userId, null); 빌더로
+			//sendResponse(roomresponsDto);
+			break;
+		
 						
 			
 		}
 	
 	}
-	private void sendResponse(ResponseDto<?> responseDto) {
-		
+	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
+		String response = gson.toJson(responseDto);
+		OutputStream outputStream = socket.getOutputStream();
+		PrintWriter write = new PrintWriter(outputStream,true);
+		write.println(response);
+		write.flush();
 	}
+	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
+	    for (SocketServer socketServer : socketList) {
+	    	socketServer.sendResponse(responseDto);
+	    }
+	}
+	
 }

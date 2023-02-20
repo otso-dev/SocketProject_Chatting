@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.List;
 
 import com.google.gson.Gson;
 
@@ -38,9 +39,12 @@ public class ClientRecive extends Thread{
 						 	break;
 					case"roomCreate" :
 							RequestDto<?> createrequestDto = gson.fromJson(request, RequestDto.class);
-							Controller.getInstance().getChattingClient().get
+							Controller.getInstance().getChattingClient().getRoomModel();
+							Controller.getInstance().getChattingClient().getRoomModel().addElement("<채팅방 목록?>");
+							Controller.getInstance().getChattingClient().getRoomModel().addAll((List<String>) responseDto.getBody());
+							Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
+							break;
 						
-					
 					
 					}
 					
