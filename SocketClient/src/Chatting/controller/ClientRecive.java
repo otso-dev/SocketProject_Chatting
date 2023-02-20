@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-
-import javax.swing.JPanel;
 
 import com.google.gson.Gson;
 
@@ -42,10 +42,12 @@ public class ClientRecive extends Thread{
 		switch (responseDto.getResource()) {
 		case "createRoom":
 			System.out.println(responseDto);
+		
 
 			Controller.getInstance().getChattingClient().getRoomListModel().clear();
 			Controller.getInstance().getChattingClient().getRoomListModel().addElement("================<<방목록>>================");
 			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
+
 			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
 			break;
 			

@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +23,7 @@ import lombok.Data;
 public class SocketServer extends Thread {
 
 	private static List<SocketServer> socketList = new ArrayList<>();
-	private static Map<String, List<SocketServer>> chatRoomMap = new HashMap<>();
+	private static Map<String, List<SocketServer>> chatRoomMap = new LinkedHashMap<>();
 
 
 	private Socket socket;
@@ -99,9 +99,6 @@ public class SocketServer extends Thread {
 	        case "enter":
 	            String enterRoom = (String) requestDto.getBody();
 	            String enterUsername = (String) requestDto.getUsername();
-	            if (!chatRoomMap.containsKey(enterRoom)) {
-	                chatRoomMap.put(enterRoom, new ArrayList<>());
-	            }
 	            chatRoomMap.get(enterRoom).add(this);
 	            ResponseDto<?> chatResponseDto = ResponseDto.<List<String>>builder()
 	            											.resource("enter")

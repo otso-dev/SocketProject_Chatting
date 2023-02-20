@@ -209,6 +209,9 @@ public class ChattingClient extends JFrame {
 				RequestDto<?> reqLeaveDto = RequestDto.<String>builder().resource("leave").username(username).body(enterRoomname).build();
 				sendRequest(reqLeaveDto);
 				
+				RequestDto<?> reqAllLeaveDto = RequestDto.<String>builder().resource("AllLeave").username(username).body(roomname).build();
+				sendRequest(reqAllLeaveDto);
+				
 				mainCard.show(MainPanel, "RoomPanel");
 			}
 		});
