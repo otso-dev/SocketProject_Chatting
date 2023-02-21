@@ -37,13 +37,13 @@ public class ClientRecive extends Thread{
 							RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
 						 	requestDto.getBody();
 						 	break;
-					case "roomCreate" :
-							RequestDto<?> createRequestDto = gson.fromJson(request, RequestDto.class);
-							Controller.getInstance().getChattingClient().getRoomModel().clear();  //clear로 비워줘야함
-							Controller.getInstance().getChattingClient().getRoomModel().addElement("<채팅방 목록>");
-							Controller.getInstance().getChattingClient().getRoomModel().addAll((List<String>) createRequestDto.getBody());
-							Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
-							break;
+						case "roomCreate" :
+								RequestDto<?> createRequestDto = gson.fromJson(request, RequestDto.class);
+								Controller.getInstance().getChattingClient().getRoomModel().clear();  //clear로 비워줘야함
+								Controller.getInstance().getChattingClient().getRoomModel().addElement("<채팅방 목록>");
+								Controller.getInstance().getChattingClient().getRoomModel().addAll((List<String>) createRequestDto.getBody());
+								Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
+								break;
 					case "roomList" :
 							RequestDto<?> listRequestDto = gson.fromJson(request, RequestDto.class);
 						

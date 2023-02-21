@@ -99,7 +99,12 @@ public class ChattingClient extends JFrame {
 				String ip = "127.0.0.1";
 				int port = 9090;
 				try {
-					String userId = username_id.getText();
+					String userId = username_id.getText().trim();
+					if (userId.isEmpty()) { // 사용자 이름이 빈 문자열인 경우, 오류 메시지를 출력합니다.
+					    JOptionPane.showMessageDialog(null, "이름에 공백이 올 수 없습니다 .", "Error", JOptionPane.ERROR_MESSAGE);
+					    return; 
+					}
+					
 					
 					socket = new Socket(ip,port);
 					RequestDto<?> requestDto = RequestDto.<String>builder()
@@ -176,7 +181,7 @@ public class ChattingClient extends JFrame {
 			@Override
 				public void mouseClicked(MouseEvent e) {
 					String room = JOptionPane.showInputDialog( null, "방 제목을 여기에 입력", "방 생성하기",JOptionPane.INFORMATION_MESSAGE);
-					if (room != null && !room.isEmpty()) {
+					if (room != null && !room.trim().isEmpty()) {
 						RequestDto<?> requestDto = RequestDto.<String>builder()
 								.resource("roomCreate")
 								.body(room)
@@ -185,14 +190,16 @@ public class ChattingClient extends JFrame {
 								.roomName(room)
 								.build();            //("roomCreate", null, room, null,null); 빌더로 변경
 							
-						sendRequest(requestDto);
+						sendRequest(requestDto);		
+						mainCard.show(MainPanel, "ChattingPanel");
 					
+				} else {
+					JOptionPane.showMessageDialog(null, "방 제목에 공백이 올 수 없습니다.", "Error", JOptionPane.ERROR_MESSAGE);
 				}
-					mainCard.show(MainPanel, "ChattingPanel");
 				
 				
 			}
-		});
+		});	
 	
 		createRoomButton.setBounds(22, 10, 50, 50);
 		RoomPanel.add(createRoomButton);

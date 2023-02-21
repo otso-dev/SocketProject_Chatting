@@ -72,21 +72,31 @@ public class SocketServer extends Thread{
 			userId = (String) requestDto.getBody();
 			break;
 		case "roomCreate":
-			room = (String) requestDto.getBody();
-			if(!chattingRoom.containsKey(room)) {
-				chattingRoom.put(room, new ArrayList<>());
-			}
-			chattingRoom.get(room).add(this);
-			ResponseDto<?> roomresponseDto = ResponseDto.<List<String>>builder()
-					.resource("roomCreate")
-					.body( new ArrayList<String>(chattingRoom.keySet()))
-					.room(room)
-					.userId(userId)	
-					.roomName(null)
-					.build();
-			sendResponse(roomresponseDto);
-			sendRoomListToAll();
-			break;
+			room = (String) requestDto.getBody();	
+			if(chattingRoom.containsValue(room)) {
+				 ResponseDto<?> roomErrorResponseDto = ResponseDto.<String>builder()
+			                .resource("ERROR")
+			                .body("Room name already exists.")
+			                .room(room)
+			                .userId(userId)
+			                .roomName(null)
+			                .build();
+			        sendResponse(roomErrorResponseDto);
+			}  else {
+			                chattingRoom.put(room, new ArrayList<>());
+			                ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder()
+			                        .resource("roomCreate")
+			                        .body(new ArrayList<String>(chattingRoom.keySet()))
+			                        .room(room)
+			                        .userId(userId)
+			                        .roomName(null)
+			                        .build();
+			                sendResponse(roomResponseDto);
+			                sendRoomListToAll();
+			        }
+							break;
+			
+			
 			
 		case "roomJoin" :
 			
