@@ -8,10 +8,12 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.Gson;
 
@@ -45,8 +47,9 @@ public class SocketServer extends Thread {
 	public void run() {
 		try {
 			reciveRequest();
+		} catch (SocketException e) {
+			System.out.println("채팅 프로그램을 종료하였습니다.");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -126,6 +129,16 @@ public class SocketServer extends Thread {
 	            												.build();
 	            sendToRoom(messageResponseDto,enterRoomName);
 	            break;
+	        case "AllLeave":
+	        	String Kinguser = (String)requestDto.getUsername();
+	        	createRoomName = (String)requestDto.getBody();
+	        	moveAll(Kinguser,createRoomName);
+	        	break;
+	        	
+	        case "removeRoom":
+	        	String deleteRoom = (String)requestDto.getBody();
+	        	removeRoom(deleteRoom);
+	        	break;
 		}
 	}
 	
@@ -165,6 +178,28 @@ public class SocketServer extends Thread {
 	    											 .build();
 	    sendToRoom(leaveResponseDto, enterRoomName);
 
+	}
+	private void moveAll(String Kinguser, String roomname) throws IOException {
+		List<SocketServer> moveAllRoom = chatRoomMap.get(roomname);
+		ResponseDto<?> moveAllResponseDto = ResponseDto.<String>builder()
+														.resource("AllLeave")
+														.username(Kinguser)
+														.body(roomname)
+														.build();
+		
+		sendToRoom(moveAllResponseDto, roomname);
+		moveAllRoom.removeAll(moveAllRoom);
+		
+	}
+	private void removeRoom(String roomname) throws IOException {
+		if(chatRoomMap.containsKey(roomname)) {
+			chatRoomMap.remove(roomname);
+		}
+		ResponseDto<?> removeRoomResponseDto = ResponseDto.<List<String>>builder()
+				.resource("removeRoom")
+				.body(new ArrayList<String>(chatRoomMap.keySet()))
+				.build();
+		sendToAll(removeRoomResponseDto);
 	}
 	
 }

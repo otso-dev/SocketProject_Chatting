@@ -1,5 +1,6 @@
 package Chatting.controller;
 
+import java.awt.Container;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,8 +10,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import com.google.gson.Gson;
 
+import Chatting.Dto.RequestDto;
 import Chatting.Dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
 
@@ -65,6 +69,18 @@ public class ClientRecive extends Thread{
 			break;
 		case "leave":
 			Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getUsername() + "님이 " + "["+ responseDto.getEnterRoomname()+"]" + " 방에서 나갔습니다.\n");
+			break;
+		case "AllLeave":
+			System.out.println(responseDto);
+			Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(),"RoomPanel");
+			JOptionPane.showMessageDialog(null, responseDto.getUsername()+"방장이 나갔습니다.","out",JOptionPane.YES_OPTION);
+			break;
+			
+		case "removeRoom":
+			Controller.getInstance().getChattingClient().getRoomListModel().clear();
+			Controller.getInstance().getChattingClient().getRoomListModel().addElement("================<<방목록>>================");
+			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
+			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
 			break;
 		default:
 			System.out.println("해당 요청은 처리 할 수 없습니다.");

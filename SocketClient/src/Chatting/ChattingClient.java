@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.Socket;
 
 import javax.swing.DefaultListModel;
@@ -90,7 +91,6 @@ public class ChattingClient extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 
 				try {
-
 					if (!userNameField.getText().isBlank()) {
 						username = userNameField.getText();
 					} else {
@@ -108,7 +108,9 @@ public class ChattingClient extends JFrame {
 					ClientRecive clientRecive = new ClientRecive(socket);
 					clientRecive.start();
 
-				} catch (IOException e1) {
+				} catch (ConnectException e1) {
+					JOptionPane.showMessageDialog(null, "서버에 연결할 수 없습니다.","error",JOptionPane.ERROR_MESSAGE);
+				}catch (IOException e1) {
 					e1.printStackTrace();
 				}
 				mainCard.show(MainPanel, "RoomPanel");
@@ -207,13 +209,17 @@ public class ChattingClient extends JFrame {
 		RoomOutButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				
-				RequestDto<?> reqLeaveDto = RequestDto.<String>builder().resource("leave").username(username).body(enterRoomname).build();
-				sendRequest(reqLeaveDto);
-				
-				RequestDto<?> reqAllLeaveDto = RequestDto.<String>builder().resource("AllLeave").username(username).body(roomname).build();
-				sendRequest(reqAllLeaveDto);
-				
+				if(roomname != null) {
+					RequestDto<?> reqAllLeaveDto = RequestDto.<String>builder().resource("AllLeave").username(username).body(roomname).build();
+					sendRequest(reqAllLeaveDto);
+					
+					RequestDto<?> reqRemoveRoom = RequestDto.<String>builder().resource("removeRoom").body(roomname).build();
+					sendRequest(reqRemoveRoom);
+				}else if(roomname == null) {
+					RequestDto<?> reqLeaveDto = RequestDto.<String>builder().resource("leave").username(username).body(enterRoomname).build();
+					sendRequest(reqLeaveDto);
+				}
+			
 				mainCard.show(MainPanel, "RoomPanel");
 			}
 		});
