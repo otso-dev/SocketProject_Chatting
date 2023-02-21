@@ -84,13 +84,17 @@ public class SocketServer extends Thread{
 					.userId(userId)	
 					.roomName(null)
 					.build();
-			//ResponseDto<?> roomresponsDto = new ResponseDto<List<String>>("roomCreate", new ArrayList<String>(chattingRoom.keySet()), room, userId, null); 빌더로
 			sendResponse(roomresponseDto);
 			sendRoomListToAll();
 			break;
+			
+		case "roomJoin" :
+			
+			
+		case "sendMessage":
+			
 		
 						
-			
 		}
 	
 	}

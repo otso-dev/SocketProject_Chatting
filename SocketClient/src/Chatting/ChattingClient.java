@@ -42,12 +42,13 @@ public class ChattingClient extends JFrame {
 	private CardLayout mainCard;
 	private JTextField username_id;
 	private JTextField textField;
+	private JTextArea ChatArea;
 	
 	private Socket socket;	
 	private Gson gson;
 	private JList<String> roomList;
-	private DefaultListModel<String> roomModel;
 	private boolean isFirstRoomLoad = true;
+	private DefaultListModel<String> roomModel;
 	
 	private String userId;
 	/**
@@ -101,9 +102,14 @@ public class ChattingClient extends JFrame {
 					String userId = username_id.getText();
 					
 					socket = new Socket(ip,port);
-					
-					//RequestDto<?> requestDto = new RequestDto<String>   ("join", null, null, userId, null );  빌더로 교체하기
-					//sendRequest(requestDto);
+					RequestDto<?> requestDto = RequestDto.<String>builder()
+														 .resource("join")
+														 .body(null)
+														 .room(null)
+														 .userId(userId)
+														 .roomName(null)
+														 .build();
+					sendRequest(requestDto);
 						
 					ClientRecive clientRecive = new ClientRecive(socket);
 					clientRecive.start();
@@ -138,11 +144,20 @@ public class ChattingClient extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				String roomEnter = roomList.getSelectedValue();
-				if(e.getClickCount() ==  1) {
+				if(e.getClickCount() ==  2) {
 					if (roomEnter != null) {
+						RequestDto<?> roomJoinrequestDto = RequestDto.<String>builder().resource("roomJoin")
+																					   .body(null) //채팅방이름
+																					   .room(null)
+																					   .userId(null)
+																					   .roomName(null)
+																					   .build();
+						
+						sendRequest(roomJoinrequestDto);
 						
 						
 					}
+					mainCard.show(MainPanel, "ChattingPanel");
 				}
 				
 			}
@@ -151,18 +166,17 @@ public class ChattingClient extends JFrame {
 		
 		
 		
-		JButton 방생성버튼 = new JButton("");
-		방생성버튼.addActionListener(new ActionListener() {
+		JButton createRoomButton = new JButton("");
+		createRoomButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		방생성버튼.setIcon(new ImageIcon("C:\\Users\\kim\\Documents\\workspace-spring-tool-suite-4-4.17.0.RELEASE\\SocketProject_Chatting\\plus.png"));	
-		방생성버튼.addMouseListener(new MouseAdapter() {
+		createRoomButton.setIcon(changePlus);	
+		createRoomButton.addMouseListener(new MouseAdapter() {
 			@Override
 				public void mouseClicked(MouseEvent e) {
 					String room = JOptionPane.showInputDialog( null, "방 제목을 여기에 입력", "방 생성하기",JOptionPane.INFORMATION_MESSAGE);
 					if (room != null && !room.isEmpty()) {
-					
 						RequestDto<?> requestDto = RequestDto.<String>builder()
 								.resource("roomCreate")
 								.body(room)
@@ -172,17 +186,16 @@ public class ChattingClient extends JFrame {
 								.build();            //("roomCreate", null, room, null,null); 빌더로 변경
 							
 						sendRequest(requestDto);
-						
-				
 					
 				}
+					mainCard.show(MainPanel, "ChattingPanel");
 				
 				
 			}
 		});
 	
-		방생성버튼.setBounds(22, 10, 50, 50);
-		RoomPanel.add(방생성버튼);
+		createRoomButton.setBounds(22, 10, 50, 50);
+		RoomPanel.add(createRoomButton);
 		
 		JPanel ChattingPanel = new JPanel();
 		MainPanel.add(ChattingPanel, "ChattingPanel");
@@ -193,6 +206,7 @@ public class ChattingClient extends JFrame {
 		ChattingPanel.add(ChattingScroll);
 		
 		JTextArea ChatArea = new JTextArea();
+		ChatArea.setEditable(false);
 		ChattingScroll.setViewportView(ChatArea);
 		
 		JButton RoomOutButton = new JButton("방 나가기");
@@ -220,7 +234,7 @@ public class ChattingClient extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode()  == KeyEvent.VK_ENTER) {
-					//메시지 보냄
+					sendMessage();
 				}
 			}
 		});
@@ -241,29 +255,26 @@ public class ChattingClient extends JFrame {
 			write.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} 
 		
 	}
 	
-	public void setRoomList(List<String> roomList) {
-        if (roomList != null && !roomList.isEmpty()) {
-            DefaultListModel<String> roomModel = new DefaultListModel< String>();
+	private void sendMessage() {
+		if (!textField.getText().isBlank()) {
+			RequestDto<?> messageReqDto = RequestDto.<String>builder()
+													.resource("sendMessage") //나중에 채워넣을것
+													.body(textField.getText())
+													.room(null)
+													.userId(null)
+													.roomName(null)
+													.build();
+			sendRequest(messageReqDto);
+			textField.setText("");
 
-            if (isFirstRoomLoad) {
-                roomModel.addElement("<채팅방 목록>");
-                isFirstRoomLoad = false;
-            }
-
-            for (String room : roomList) {
-                roomModel.addElement(room);
-            }
-
-	            roomList.setModel(roomModel);
-	            roomList.setSelectedIndex(0);
-        }
-    }
+		}
+	}
+	
 	
 	ImageIcon plus = new ImageIcon("C:\\Users\\ITPS\\Downloads\\plus.png");
 	ImageIcon changePlus = new ImageIcon(plus.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH));
-	
 }
