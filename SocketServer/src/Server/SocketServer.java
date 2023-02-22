@@ -21,49 +21,50 @@ import Server.Dto.ResponseDto;
 import lombok.Data;
 
 @Data
-public class SocketServer extends Thread{
-	
-	
+public class SocketServer extends Thread {
+
 	private Socket socket;
-	private List<SocketServer>  socketList = new ArrayList<>();
+	private List<SocketServer> socketList = new ArrayList<>();
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	private Gson gson;
 	private String userId;
 	private String room;
-	
+
 	private static List<String> roomName = new ArrayList<>();
 	private static Map<String, List<SocketServer>> chattingRoom = new HashMap<>();
-	
+
 	public SocketServer(Socket socket) {
 		this.socket = socket;
 		socketList.add(this);
 		gson = new Gson();
 	}
-	
+
 	@Override
 	public void run() {
 		try {
-			reciveRequest();;
-			
+			reciveRequest();
+			;
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void reciveRequest() throws IOException {
 		inputStream = socket.getInputStream();
 		BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
-		
-		while(true) {
+
+		while (true) {
 			String request = read.readLine();
-			if(request == null) {
+			if (request == null) {
 				throw new ConnectException();
 			}
-			
+
 			RequestMapping(request);
 		}
 	}
+
 	private void RequestMapping(String request) throws IOException {
 		RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
 		String resource = requestDto.getResource() ;
@@ -75,12 +76,13 @@ public class SocketServer extends Thread{
 			room = (String) requestDto.getBody();	
 			if(chattingRoom.containsValue(room)) {
 				 ResponseDto<?> roomErrorResponseDto = ResponseDto.<String>builder()
-			                .resource("ERROR")
-			                .body("Room name already exists.")
+			                .resource("error")
+			                .body("이미 존재하는 방입니다.")
 			                .room(room)
 			                .userId(userId)
 			                .roomName(null)
 			                .build();
+				 
 			        sendResponse(roomErrorResponseDto);
 			}  else {
 			                chattingRoom.put(room, new ArrayList<>());
@@ -95,37 +97,30 @@ public class SocketServer extends Thread{
 			                sendRoomListToAll();
 			        }
 							break;
+		case "roomEnter":
 			
-			
-			
-		case "roomJoin" :
-			
-			
-		case "sendMessage":
-			
-		
-						
-		}
+			}
 	
 	}
+
 	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
 		OutputStream outputStream = socket.getOutputStream();
-		PrintWriter write = new PrintWriter(outputStream,true);
+		PrintWriter write = new PrintWriter(outputStream, true);
 		write.println(response);
 		write.flush();
 	}
+
 	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
-	    for (SocketServer socketServer : socketList) {
-	    	socketServer.sendResponse(responseDto);
-	    }
+		for (SocketServer socketServer : socketList) {
+			socketServer.sendResponse(responseDto);
+		}
 	}
+
 	private void sendRoomListToAll() throws IOException {
-	    ResponseDto<?> responseDto = ResponseDto.<List<String>>builder()
-	            .resource("roomList")
-	            .body(new ArrayList<String>(chattingRoom.keySet()))
-	            .build();
-	    sendToAll(responseDto);
+		ResponseDto<?> responseDto = ResponseDto.<List<String>>builder().resource(null)
+				.body(new ArrayList<String>(chattingRoom.keySet())).build();
+		sendToAll(responseDto);
 	}
-	
+
 }

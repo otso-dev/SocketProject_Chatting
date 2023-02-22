@@ -7,6 +7,9 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.List;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+
 import com.google.gson.Gson;
 
 import Chatting.ChattingClient;
@@ -44,21 +47,15 @@ public class ClientRecive extends Thread{
 								Controller.getInstance().getChattingClient().getRoomModel().addAll((List<String>) createRequestDto.getBody());
 								Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
 								break;
-					case "roomList" :
-							RequestDto<?> listRequestDto = gson.fromJson(request, RequestDto.class);
+
 						
+						case "error" :
+								JOptionPane.showMessageDialog(null, "이미 존재하는 방입니다.", "Error", JOptionPane.ERROR_MESSAGE);
 						
-						
-							break;
-							
-					case "roomJoin" :
-						RequestDto<?> joinRequestDto = gson.fromJson(request, RequestDto.class);
-						Controller.getInstance().getChattingClient();// 수정
-						
-					case "sendMessage":
-						RequestDto<?> messageRequestDto = gson.fromJson(request, RequestDto.class);
-						Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getBody() + "\n");
-						break;
+						case "sendMessage":
+								RequestDto<?> messageRequestDto = gson.fromJson(request, RequestDto.class);
+								Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getBody() + "\n");
+								break;
 						
 						
 					

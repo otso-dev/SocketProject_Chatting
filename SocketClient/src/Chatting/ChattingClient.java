@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -47,7 +46,6 @@ public class ChattingClient extends JFrame {
 	private Socket socket;	
 	private Gson gson;
 	private JList<String> roomList;
-	private boolean isFirstRoomLoad = true;
 	private DefaultListModel<String> roomModel;
 	
 	private String userId;
@@ -100,7 +98,7 @@ public class ChattingClient extends JFrame {
 				int port = 9090;
 				try {
 					String userId = username_id.getText().trim();
-					if (userId.isEmpty()) { // 사용자 이름이 빈 문자열인 경우, 오류 메시지를 출력합니다.
+					if (userId.isEmpty()) {
 					    JOptionPane.showMessageDialog(null, "이름에 공백이 올 수 없습니다 .", "Error", JOptionPane.ERROR_MESSAGE);
 					    return; 
 					}
@@ -109,10 +107,7 @@ public class ChattingClient extends JFrame {
 					socket = new Socket(ip,port);
 					RequestDto<?> requestDto = RequestDto.<String>builder()
 														 .resource("join")
-														 .body(null)
-														 .room(null)
 														 .userId(userId)
-														 .roomName(null)
 														 .build();
 					sendRequest(requestDto);
 						
@@ -154,7 +149,7 @@ public class ChattingClient extends JFrame {
 						RequestDto<?> roomJoinrequestDto = RequestDto.<String>builder().resource("roomJoin")
 																					   .body(null) //채팅방이름
 																					   .room(null)
-																					   .userId(null)
+																					   .userId(userId)
 																					   .roomName(null)
 																					   .build();
 						
@@ -188,9 +183,10 @@ public class ChattingClient extends JFrame {
 								.room(room)
 								.userId(userId)
 								.roomName(room)
-								.build();            //("roomCreate", null, room, null,null); 빌더로 변경
-							
-						sendRequest(requestDto);		
+								.build();            
+								
+						sendRequest(requestDto);
+						
 						mainCard.show(MainPanel, "ChattingPanel");
 					
 				} else {
