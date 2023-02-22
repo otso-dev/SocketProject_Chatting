@@ -71,9 +71,10 @@ public class SocketServer extends Thread {
 		System.out.println(requestDto);
 		switch (requestDto.getResource()) {
 		case "join":
-			username = (String) requestDto.getBody();
+			username = (String) requestDto.getUsername();
+			String joinUserName = (String) requestDto.getBody();
 			for (SocketServer users : socketList) {
-				if (users.getUsername().equals(username)) {
+				if (users.getUsername().equals(joinUserName)) {
 					ResponseDto<?> joinErrorRespDto = ResponseDto.<String>builder().resource("error").status("join")
 							.body("해당 이름은 이미 존재합니다.").build();
 					sendResponse(joinErrorRespDto);

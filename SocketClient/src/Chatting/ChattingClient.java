@@ -95,22 +95,21 @@ public class ChattingClient extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 
 				try {
-					
+					username = userNameField.getText();
 					if (!userNameField.getText().isBlank()) {
-						username = userNameField.getText();
-						RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").body(username).build();
-						sendRequest(reqJoin);
-						joinflag = true;
-						if(joinflag) {
-							String ip = "127.0.0.1";
-							int port = 9090;
-							socket = new Socket(ip, port);
-							ClientRecive clientRecive = new ClientRecive(socket);
-							clientRecive.start();
-						}
+						
+						String ip = "127.0.0.1";
+						int port = 9090;
+						socket = new Socket(ip, port);
+						ClientRecive clientRecive = new ClientRecive(socket);
+						clientRecive.start();
+					}else {
+						JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
+						return;
 					}
-					JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
-					return;
+					RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").username(username).body(username).build();
+					sendRequest(reqJoin);
+					
 
 				} catch (ConnectException e1) {
 					JOptionPane.showMessageDialog(null, "서버에 연결할 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
