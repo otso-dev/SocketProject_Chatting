@@ -2,6 +2,8 @@ package Chatting;
 
 import java.awt.CardLayout;
 import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -70,7 +72,8 @@ public class ChattingClient extends JFrame {
 	public ChattingClient() {
 		this.setVisible(true);
 		gson = new Gson();
-
+		
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 480, 800);
 		MainPanel = new JPanel();
@@ -96,21 +99,20 @@ public class ChattingClient extends JFrame {
 
 				try {
 					username = userNameField.getText();
+				
+					
 					if (!userNameField.getText().isBlank()) {
-						
+						ClientRecive clientRecive = new ClientRecive(socket);
+						clientRecive.start();
 						String ip = "127.0.0.1";
 						int port = 9090;
 						socket = new Socket(ip, port);
-						ClientRecive clientRecive = new ClientRecive(socket);
-						clientRecive.start();
+						RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").username(username).body(username).build();
+						sendRequest(reqJoin);
 					}else {
 						JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").username(username).body(username).build();
-					sendRequest(reqJoin);
-					
-
 				} catch (ConnectException e1) {
 					JOptionPane.showMessageDialog(null, "서버에 연결할 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
 				} catch (IOException e1) {
