@@ -27,7 +27,6 @@ public class SocketServer extends Thread {
 	private static List<SocketServer> socketList = new ArrayList<>();
 	private static Map<String, List<SocketServer>> chatRoomMap = new LinkedHashMap<>();
 
-
 	private Socket socket;
 	private InputStream inputStream;
 	private OutputStream outputStream;
@@ -73,75 +72,80 @@ public class SocketServer extends Thread {
 		switch (requestDto.getResource()) {
 		case "join":
 			username = (String) requestDto.getBody();
+			for (SocketServer users : socketList) {
+				if (users.getUsername().equals(username)) {
+					ResponseDto<?> joinErrorRespDto = ResponseDto.<String>builder().resource("error").status("join")
+							.body("해당 이름은 이미 존재합니다.").build();
+					sendResponse(joinErrorRespDto);
+					break;
+				}
+				ResponseDto<?> joinrespDto = ResponseDto.<List<String>>builder().resource("join")
+						.body(new ArrayList<String>(chatRoomMap.keySet())).build();
+				sendResponse(joinrespDto);
+			}
 			break;
-		 case "createRoom":
-			 createRoomName = (String) requestDto.getBody();
-	            if (!chatRoomMap.containsKey(createRoomName)) {
-	                chatRoomMap.put(createRoomName, new ArrayList<>());
-	            }
-	            chatRoomMap.get(createRoomName).add(this);
-	            ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder()
-	            											.resource("createRoom")
-	            											.username(username)
-	            											.createRoomname(createRoomName)
-	            											.body(new ArrayList<String>(chatRoomMap.keySet()))
-	            											.build();
-	            sendToAll(roomResponseDto);
-	            break;
-	        case "createjoin":
-	            String createroomname = (String) requestDto.getBody();
-	            String user = (String)requestDto.getUsername();
-	            ResponseDto<?> joinResponseDto = ResponseDto.<String>builder()
-	            											.resource("createjoin")
-	            											.username(user)
-	            											.body(createroomname)
-	            											.build();
-	            sendToRoom(joinResponseDto, createroomname);
-	            break;
+		case "createRoom":
+			createRoomName = (String) requestDto.getBody();
+			if (!chatRoomMap.containsKey(createRoomName)) {
+				chatRoomMap.put(createRoomName, new ArrayList<>());
+				chatRoomMap.get(createRoomName).add(this);
+				ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder().resource("createRoom")
+						.username(username).status("ok").createRoomname(createRoomName)
+						.body(new ArrayList<String>(chatRoomMap.keySet())).build();
+				sendToAll(roomResponseDto);
 
-	        case "enter":
-	            String enterRoom = (String) requestDto.getBody();
-	            String enterUsername = (String) requestDto.getUsername();
-	            chatRoomMap.get(enterRoom).add(this);
-	            ResponseDto<?> chatResponseDto = ResponseDto.<List<String>>builder()
-	            											.resource("enter")
-	            											.username(enterUsername)
-	            											.enterRoomname(enterRoom)
-	            											.body(null)
-	            											.build();
-	            sendToRoom(chatResponseDto,enterRoom);
-	            break;
-	        case "leave":
-	        	String leaveRoomname = (String) requestDto.getBody();
-	        	moveRoom(leaveRoomname);
-	        	break;
+			} else {
+				ResponseDto<?> createError = ResponseDto.<String>builder().resource("error").status("createRoom")
+						.body("해당 방이름은 이미 존재합니다.").build();
+				sendResponse(createError);
+				break;
+			}
+			System.out.println("break");
 
-	        case "sendMessage":
-	            String message = (String) requestDto.getBody();
-	            enterRoomName = (String) requestDto.getEnterRoomname();
-	            String username1 = (String)requestDto.getUsername();
-	            
-	            ResponseDto<?> messageResponseDto = ResponseDto.<String>builder()
-	            												.resource("sendMessage")
-	            												.username(username1)
-	            												.enterRoomname(enterRoomName)
-	            												.body(message)
-	            												.build();
-	            sendToRoom(messageResponseDto,enterRoomName);
-	            break;
-	        case "AllLeave":
-	        	String Kinguser = (String)requestDto.getUsername();
-	        	createRoomName = (String)requestDto.getBody();
-	        	moveAll(Kinguser,createRoomName);
-	        	break;
-	        	
-	        case "removeRoom":
-	        	String deleteRoom = (String)requestDto.getBody();
-	        	removeRoom(deleteRoom);
-	        	break;
+			break;
+		case "createjoin":
+			String createroomname = (String) requestDto.getBody();
+			String user = (String) requestDto.getUsername();
+			ResponseDto<?> joinResponseDto = ResponseDto.<String>builder().resource("createjoin").username(user)
+					.body(createroomname).build();
+			sendToRoom(joinResponseDto, createroomname);
+			break;
+
+		case "enter":
+			String enterRoom = (String) requestDto.getBody();
+			String enterUsername = (String) requestDto.getUsername();
+			chatRoomMap.get(enterRoom).add(this);
+			ResponseDto<?> chatResponseDto = ResponseDto.<List<String>>builder().resource("enter")
+					.username(enterUsername).enterRoomname(enterRoom).body(null).build();
+			sendToRoom(chatResponseDto, enterRoom);
+			break;
+		case "leave":
+			String leaveRoomname = (String) requestDto.getBody();
+			moveRoom(leaveRoomname);
+			break;
+
+		case "sendMessage":
+			String message = (String) requestDto.getBody();
+			enterRoomName = (String) requestDto.getEnterRoomname();
+			String username1 = (String) requestDto.getUsername();
+
+			ResponseDto<?> messageResponseDto = ResponseDto.<String>builder().resource("sendMessage")
+					.username(username1).enterRoomname(enterRoomName).body(message).build();
+			sendToRoom(messageResponseDto, enterRoomName);
+			break;
+		case "AllLeave":
+			String Kinguser = (String) requestDto.getUsername();
+			createRoomName = (String) requestDto.getBody();
+			moveAll(Kinguser, createRoomName);
+			break;
+
+		case "removeRoom":
+			String deleteRoom = (String) requestDto.getBody();
+			removeRoom(deleteRoom);
+			break;
 		}
 	}
-	
+
 	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
 		String response = gson.toJson(responseDto);
 		OutputStream outputStream = socket.getOutputStream();
@@ -149,57 +153,52 @@ public class SocketServer extends Thread {
 		writer.println(response);
 		writer.flush();
 	}
-	
-	
+
 	private void sendToAll(ResponseDto<?> responseDto) throws IOException {
-	    for (SocketServer socketServer : socketList) {
-	    	socketServer.sendResponse(responseDto);
-	    }
+		for (SocketServer socketServer : socketList) {
+			socketServer.sendResponse(responseDto);
+		}
 	}
 
 	private void sendToRoom(ResponseDto<?> responseDto, String roomname) throws IOException {
-	    List<SocketServer> socketServers = chatRoomMap.get(roomname);
-	    if (socketServers != null) {
-	        for (SocketServer socketServer : socketServers) {
-	        	socketServer.sendResponse(responseDto);
-	        }
-	    }
+		List<SocketServer> socketServers = chatRoomMap.get(roomname);
+		if (socketServers != null) {
+			for (SocketServer socketServer : socketServers) {
+				socketServer.sendResponse(responseDto);
+			}
+		}
 	}
-	
+
 	private void moveRoom(String enterRoomName) throws IOException {
-	    // 현재 방에서 나가기
-	    List<SocketServer> currentRoom = chatRoomMap.get(enterRoomName);
-	    currentRoom.remove(this);
-	    ResponseDto<?> leaveResponseDto = ResponseDto.<String>builder()
-	    											 .resource("leave")
-	    											 .username(username)
-	    											 .enterRoomname(enterRoomName)
-	    											 .body(null)
-	    											 .build();
-	    sendToRoom(leaveResponseDto, enterRoomName);
+		// 현재 방에서 나가기
+		List<SocketServer> currentRoom = chatRoomMap.get(enterRoomName);
+		currentRoom.remove(this);
+		ResponseDto<?> leaveResponseDto = ResponseDto.<String>builder().resource("leave").username(username)
+				.enterRoomname(enterRoomName).body(null).build();
+		sendToRoom(leaveResponseDto, enterRoomName);
 
 	}
+
 	private void moveAll(String Kinguser, String roomname) throws IOException {
 		List<SocketServer> moveAllRoom = chatRoomMap.get(roomname);
-		ResponseDto<?> moveAllResponseDto = ResponseDto.<String>builder()
-														.resource("AllLeave")
-														.username(Kinguser)
-														.body(roomname)
-														.build();
-		
+		ResponseDto<?> moveAllResponseDto = ResponseDto.<String>builder().resource("AllLeave").username(Kinguser)
+				.body(roomname).build();
+
 		sendToRoom(moveAllResponseDto, roomname);
-		moveAllRoom.removeAll(moveAllRoom);
-		
-	}
-	private void removeRoom(String roomname) throws IOException {
-		if(chatRoomMap.containsKey(roomname)) {
-			chatRoomMap.remove(roomname);
+		if (!moveAllRoom.isEmpty()) {
+			moveAllRoom.removeAll(moveAllRoom);
 		}
-		ResponseDto<?> removeRoomResponseDto = ResponseDto.<List<String>>builder()
-				.resource("removeRoom")
-				.body(new ArrayList<String>(chatRoomMap.keySet()))
-				.build();
-		sendToAll(removeRoomResponseDto);
+
 	}
-	
+
+	private void removeRoom(String roomname) throws IOException {
+		if (chatRoomMap.containsKey(roomname)) {
+			chatRoomMap.remove(roomname);
+			ResponseDto<?> removeRoomResponseDto = ResponseDto.<List<String>>builder().resource("removeRoom")
+					.body(new ArrayList<String>(chatRoomMap.keySet())).build();
+			sendToAll(removeRoomResponseDto);
+		}
+
+	}
+
 }

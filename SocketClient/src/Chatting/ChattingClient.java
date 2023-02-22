@@ -6,7 +6,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
@@ -50,6 +53,7 @@ public class ChattingClient extends JFrame {
 	private String roomname;
 	private String username;
 	private String enterRoomname;
+	private boolean joinflag;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -91,28 +95,28 @@ public class ChattingClient extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 
 				try {
+					
 					if (!userNameField.getText().isBlank()) {
 						username = userNameField.getText();
-					} else {
-						JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
-						return;
+						RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").body(username).build();
+						sendRequest(reqJoin);
+						joinflag = true;
+						if(joinflag) {
+							String ip = "127.0.0.1";
+							int port = 9090;
+							socket = new Socket(ip, port);
+							ClientRecive clientRecive = new ClientRecive(socket);
+							clientRecive.start();
+						}
 					}
-
-					String ip = "127.0.0.1";
-					int port = 9090;
-					socket = new Socket(ip, port);
-
-					RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").body(username).build();
-					sendRequest(reqJoin);
-
-					ClientRecive clientRecive = new ClientRecive(socket);
-					clientRecive.start();
+					JOptionPane.showMessageDialog(null, "사용자이름이 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
+					return;
 
 				} catch (ConnectException e1) {
-					JOptionPane.showMessageDialog(null, "서버에 연결할 수 없습니다.","error",JOptionPane.ERROR_MESSAGE);
-				}catch (IOException e1) {
+					JOptionPane.showMessageDialog(null, "서버에 연결할 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
+				} catch (IOException e1) {
 					e1.printStackTrace();
-				}
+				} 
 				mainCard.show(MainPanel, "RoomPanel");
 			}
 
@@ -134,22 +138,20 @@ public class ChattingClient extends JFrame {
 		roomList.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				String enterRoom = roomList.getSelectedValue();
+
 				if (e.getClickCount() == 2) {
-					if (enterRoom != null) {
-						
+					String enterRoom = roomList.getSelectedValue();
+					// System.out.println(roomList.getSelectedIndex());
+					if (enterRoom != null && roomList.getSelectedIndex() != 0) {
+
 						enterRoomname = enterRoom;
-						RequestDto<?> reqEnter = RequestDto.<String>builder()
-															.resource("enter")
-															.username(username)
-															.enterRoomname(enterRoom)
-															.body(enterRoom)
-															.build();
+						RequestDto<?> reqEnter = RequestDto.<String>builder().resource("enter").username(username)
+								.enterRoomname(enterRoom).body(enterRoom).build();
 						sendRequest(reqEnter);
 						ChatArea.setText("");
 						chattingRoomName.setText("제목: " + enterRoom + "의 방");
 						mainCard.show(MainPanel, "ChattingPanel");
-						
+
 					}
 				}
 
@@ -161,29 +163,33 @@ public class ChattingClient extends JFrame {
 		CrateRoomButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				roomname = "";
-				if (roomname.isBlank()) {
-					roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요", "방 생성",
-							JOptionPane.INFORMATION_MESSAGE);
+				
+				try {
+					roomname = JOptionPane.showInputDialog(null, "방 제목을 입력하세요", "방 생성", JOptionPane.INFORMATION_MESSAGE);
 					enterRoomname = roomname;
-					chattingRoomName.setText("제목: " + roomname + "의 방");
-				} else {
-					JOptionPane.showMessageDialog(null, "방제목은 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
+					if (roomname.isBlank()) {
+						JOptionPane.showMessageDialog(null, "방 제목은 공백일 수 없습니다.", "error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					RequestDto<?> reqCreateRoom = RequestDto.<String>builder().resource("createRoom")
+															.username(username)
+															.createRoomname(roomname)
+															.body(roomname)
+															.build();
+					
+					
+
+					sendRequest(reqCreateRoom);
+					
+				} catch (NullPointerException e2) {
+					JOptionPane.showMessageDialog(null, "취소하였습니다.", "exit", JOptionPane.CANCEL_OPTION);
+					return;
+				} catch (Exception e2) {
+					JOptionPane.showMessageDialog(null, "취소하였습니다.", "exit", JOptionPane.CANCEL_OPTION);
 					return;
 				}
-				RequestDto<?> reqCreateRoom = RequestDto.<String>builder()
-														.resource("createRoom")
-														.username(username)
-														.createRoomname(roomname)
-														.body(roomname)
-														.build();
-				sendRequest(reqCreateRoom);
-				RequestDto<?> reqCreatejoin = RequestDto.<String>builder().resource("createjoin")
-																		  .username(username)
-																	      .body(roomname).build();
-				sendRequest(reqCreatejoin);
-				
-				mainCard.show(MainPanel,"ChattingPanel");
+			
+
 			}
 
 		});
@@ -209,17 +215,20 @@ public class ChattingClient extends JFrame {
 		RoomOutButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if(roomname != null) {
-					RequestDto<?> reqAllLeaveDto = RequestDto.<String>builder().resource("AllLeave").username(username).body(roomname).build();
+				if (roomname != null) {
+					RequestDto<?> reqAllLeaveDto = RequestDto.<String>builder().resource("AllLeave").username(username)
+							.body(roomname).build();
 					sendRequest(reqAllLeaveDto);
-					
-					RequestDto<?> reqRemoveRoom = RequestDto.<String>builder().resource("removeRoom").body(roomname).build();
+
+					RequestDto<?> reqRemoveRoom = RequestDto.<String>builder().resource("removeRoom").body(roomname)
+							.build();
 					sendRequest(reqRemoveRoom);
-				}else if(roomname == null) {
-					RequestDto<?> reqLeaveDto = RequestDto.<String>builder().resource("leave").username(username).body(enterRoomname).build();
+				} else if (roomname == null) {
+					RequestDto<?> reqLeaveDto = RequestDto.<String>builder().resource("leave").username(username)
+							.body(enterRoomname).build();
 					sendRequest(reqLeaveDto);
 				}
-			
+
 				mainCard.show(MainPanel, "RoomPanel");
 			}
 		});
@@ -270,12 +279,8 @@ public class ChattingClient extends JFrame {
 
 	private void sendMenssage() {
 		if (!messageInput.getText().isBlank()) {
-			RequestDto<?> messageReqDto = RequestDto.<String>builder()
-													.resource("sendMessage")
-													.username(username)
-													.enterRoomname(enterRoomname)
-													.body(messageInput.getText())
-													.build();
+			RequestDto<?> messageReqDto = RequestDto.<String>builder().resource("sendMessage").username(username)
+					.enterRoomname(enterRoomname).body(messageInput.getText()).build();
 			sendRequest(messageReqDto);
 
 		}
