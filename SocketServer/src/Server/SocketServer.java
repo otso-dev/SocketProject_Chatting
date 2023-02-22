@@ -80,10 +80,10 @@ public class SocketServer extends Thread {
 					sendResponse(joinErrorRespDto);
 					break;
 				}
+			}
 				ResponseDto<?> joinrespDto = ResponseDto.<List<String>>builder().resource("join")
 						.body(new ArrayList<String>(chatRoomMap.keySet())).build();
 				sendResponse(joinrespDto);
-			}
 			break;
 		case "createRoom":
 			createRoomName = (String) requestDto.getBody();
