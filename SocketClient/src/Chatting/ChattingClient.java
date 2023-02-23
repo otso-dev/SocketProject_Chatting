@@ -42,6 +42,8 @@ public class ChattingClient extends JFrame {
 	private JTextField userNameField;
 	private JTextField messageInput;
 	private JLabel chattingRoomName;
+	private JLabel labelUsername;
+	private JLabel labelChatUsername;
 	private JTextArea ChatArea;
 
 	private Gson gson;
@@ -101,12 +103,12 @@ public class ChattingClient extends JFrame {
 		
 		ImageIcon startImage = new ImageIcon("./ImageFile/login1.png");
 		Image img = startImage.getImage();
-		Image updateImg = img.getScaledInstance(350, 150, Image.SCALE_SMOOTH);
+		Image updateImg = img.getScaledInstance(250, 70, Image.SCALE_SMOOTH);
 		ImageIcon updateIcon = new ImageIcon(updateImg);
 		
 		ImageIcon changeIcon = new ImageIcon("./ImageFile/login2.png");
 		Image changeImg = changeIcon.getImage();
-		Image updateStartImg2 = changeImg.getScaledInstance(350, 150, Image.SCALE_SMOOTH);
+		Image updateStartImg2 = changeImg.getScaledInstance(250, 70, Image.SCALE_SMOOTH);
 		ImageIcon changeIconStart = new ImageIcon(updateStartImg2);
 		
 		JButton JoinButton = new JButton(updateIcon);
@@ -123,11 +125,10 @@ public class ChattingClient extends JFrame {
 					String ip = "127.0.0.1";
 					int port = 9090;
 					socket = new Socket(ip, port);
+					ClientRecive clientRecive = new ClientRecive(socket);
+					clientRecive.start();
 					username = userNameField.getText();
 					if (!userNameField.getText().isBlank()) {
-						ClientRecive clientRecive = new ClientRecive(socket);
-						clientRecive.start();
-						
 						RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").body(username).build();
 						sendRequest(reqJoin);
 					}else {
@@ -143,7 +144,7 @@ public class ChattingClient extends JFrame {
 			}
 
 		});
-		JoinButton.setBounds(50, 383, 350, 150);
+		JoinButton.setBounds(100, 374, 250, 70);
 		JoinPanel.add(JoinButton);
 		
 		
@@ -160,7 +161,7 @@ public class ChattingClient extends JFrame {
 		RoomPanel.setLayout(null);
 
 		JScrollPane ChattingRoomScroll = new JScrollPane();
-		ChattingRoomScroll.setBounds(89, 0, 375, 761);
+		ChattingRoomScroll.setBounds(0, 116, 464, 459);
 		RoomPanel.add(ChattingRoomScroll);
 
 		roomListModel = new DefaultListModel<>();
@@ -193,7 +194,7 @@ public class ChattingClient extends JFrame {
 		
 		ImageIcon createAddImage = new ImageIcon("./ImageFile/add-group.png");
 		Image img2 = createAddImage.getImage();
-		Image updateImg2 = img2.getScaledInstance(90,90, Image.SCALE_SMOOTH);
+		Image updateImg2 = img2.getScaledInstance(50,50, Image.SCALE_SMOOTH);
 		ImageIcon updateIcon2 = new ImageIcon(updateImg2);
 		
 		JButton CrateRoomButton = new JButton(updateIcon2);
@@ -234,24 +235,37 @@ public class ChattingClient extends JFrame {
 			}
 
 		});
-		CrateRoomButton.setBounds(0, 100, 90, 90);
+		CrateRoomButton.setBounds(12, 606, 50, 50);
 		RoomPanel.add(CrateRoomButton);
 		
-		ImageIcon RoomImg = new ImageIcon("./ImageFile/Instargram.jpg");
+		labelUsername = new JLabel("username");
+		System.out.println(username);
+		//labelUsername.setText(username);
+		labelUsername.setBounds(54, 56, 97, 50);
+		RoomPanel.add(labelUsername);
+		
+		ImageIcon RoomImg = new ImageIcon("./ImageFile/Instagram_Frame.png");
 		Image Roomimg = RoomImg.getImage();
-		Image updateRoomImg = Roomimg.getScaledInstance(480,800, Image.SCALE_SMOOTH);
+		Image updateRoomImg = Roomimg.getScaledInstance(500,820, Image.SCALE_SMOOTH);
 		ImageIcon updateRoomIcon = new ImageIcon(updateRoomImg);
 		
 		JLabel roomImage = new JLabel(updateRoomIcon);
 		roomImage.setBounds(0, 0, 464, 761);
 		RoomPanel.add(roomImage);
+		
+		
+		ImageIcon userImagfile = new ImageIcon("./ImageFile/user2.png");
+		JLabel userImage = new JLabel(userImagfile);
+		userImage.setBounds(4, 56, 50, 50);
+		RoomPanel.add(userImage);
+		
 
 		JPanel ChattingPanel = new JPanel();
 		MainPanel.add(ChattingPanel, "ChattingPanel");
 		ChattingPanel.setLayout(null);
 
 		JScrollPane ChattingScroll = new JScrollPane();
-		ChattingScroll.setBounds(0, 66, 464, 624);
+		ChattingScroll.setBounds(0, 116, 464, 459);
 		ChattingPanel.add(ChattingScroll);
 
 		ChatArea = new JTextArea();
@@ -261,16 +275,11 @@ public class ChattingClient extends JFrame {
 		
 
 		chattingRoomName = new JLabel("");
-		chattingRoomName.setBounds(0, 0, 464, 68);
+		chattingRoomName.setBounds(202, 38, 166, 68);
 		ChattingPanel.add(chattingRoomName);
 
 		
-		
-		ImageIcon roomExitImg = new ImageIcon("./ImageFile/exit.png");
-		Image img3 = roomExitImg.getImage();
-		Image updateImg3 = img3.getScaledInstance(50,50, Image.SCALE_SMOOTH);
-		ImageIcon updateIcon3 = new ImageIcon(updateImg3);
-		JButton RoomOutButton = new JButton(updateIcon3);
+		JButton RoomOutButton = new JButton();
 		RoomOutButton.setBorderPainted(false);
 		RoomOutButton.setContentAreaFilled(false);
 		RoomOutButton.setFocusPainted(false);
@@ -295,7 +304,7 @@ public class ChattingClient extends JFrame {
 				mainCard.show(MainPanel, "RoomPanel");
 			}
 		});
-		RoomOutButton.setBounds(380, 10, 50, 50);
+		RoomOutButton.setBounds(422, 10, 30, 30);
 		ChattingPanel.add(RoomOutButton);
 		
 		
@@ -313,7 +322,7 @@ public class ChattingClient extends JFrame {
 		SendButton.setBorderPainted(false);
 		SendButton.setContentAreaFilled(false);
 		SendButton.setFocusPainted(false);
-		
+		SendButton.setRolloverIcon(updateChangeIcon);
 		
 		SendButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -334,21 +343,31 @@ public class ChattingClient extends JFrame {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					sendMenssage();
-					SendButton.setRolloverIcon(updateChangeIcon);
+					
 				}
 			}
 		});
 		MessageScroll.setViewportView(messageInput);
 		messageInput.setColumns(10);
 		
-		ImageIcon chattRoomImg = new ImageIcon("./ImageFile/Instargram.jpg");
+		labelChatUsername = new JLabel("");
+		labelChatUsername.setBounds(54, 56, 108, 50);
+		ChattingPanel.add(labelChatUsername);
+		
+		ImageIcon chattRoomImg = new ImageIcon("./ImageFile/Instagram_Frame.png");
 		Image chattRoomimg = chattRoomImg.getImage();
-		Image updatechattRoomImg = chattRoomimg.getScaledInstance(480,800, Image.SCALE_SMOOTH);
+		Image updatechattRoomImg = chattRoomimg.getScaledInstance(500,820, Image.SCALE_SMOOTH);
 		ImageIcon updatechattRoomIcon = new ImageIcon(updatechattRoomImg);
 		
 		JLabel chatRoomImage = new JLabel(updatechattRoomIcon);
 		chatRoomImage.setBounds(0, 0, 464, 761);
 		ChattingPanel.add(chatRoomImage);
+		
+		
+		ImageIcon chatuserImagfile = new ImageIcon("./ImageFile/user2.png");
+		JLabel chatUserimage = new JLabel(chatuserImagfile);
+		chatUserimage.setBounds(4, 56, 50, 50);
+		ChattingPanel.add(chatUserimage);
 
 	}
 

@@ -45,9 +45,11 @@ public class ClientRecive extends Thread{
 		BufferedReader read = new BufferedReader(new InputStreamReader(inputStream));
 		String request = read.readLine();
 		ResponseDto<?> responseDto = gson.fromJson(request,ResponseDto.class);
+		System.out.println(responseDto);
 		switch (responseDto.getResource()) {
 		case "join":
 			System.out.println(responseDto);
+			Controller.getInstance().getChattingClient().getLabelUsername().setText((String) responseDto.getUsername());
 			Controller.getInstance().getChattingClient().getRoomListModel().clear();
 			Controller.getInstance().getChattingClient().getRoomListModel().addElement("================<<방목록>>================");
 			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
@@ -71,11 +73,13 @@ public class ClientRecive extends Thread{
 		case"createjoin":
 				Controller.getInstance().getChattingClient().getChatArea().setText("");
 				System.out.println(responseDto.getBody());
+				Controller.getInstance().getChattingClient().getLabelChatUsername().setText(Controller.getInstance().getChattingClient().getUsername());
 				Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(),"ChattingPanel");
-				Controller.getInstance().getChattingClient().getChattingRoomName().setText((String)responseDto.getBody());
+				Controller.getInstance().getChattingClient().getChattingRoomName().setText("제목: " + (String)responseDto.getBody()+"의 방");
 				Controller.getInstance().getChattingClient().getChatArea().append("***" + responseDto.getBody() + "***" + "방을 생성하였습니다.\n");
 			break;
 		case "enter":
+			Controller.getInstance().getChattingClient().getLabelChatUsername().setText(Controller.getInstance().getChattingClient().getUsername());
 			Controller.getInstance().getChattingClient().getChatArea().append("[" + responseDto.getUsername()+ "]" + "님이 접속하였습니다.\n");
 			break;
 		case "sendMessage":

@@ -47,13 +47,7 @@ public class SocketServer extends Thread {
 		try {
 			reciveRequest();
 		} catch (SocketException e) {
-			try {
-				socket.close();
 				System.out.println("채팅 프로그램을 종료하였습니다.");
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -77,7 +71,7 @@ public class SocketServer extends Thread {
 		System.out.println(requestDto);
 		switch (requestDto.getResource()) {
 		case "join":
-			username = (String) requestDto.getUsername();
+			username = (String) requestDto.getBody();
 //			String joinUserName = (String) requestDto.getBody();
 //			for (SocketServer users : socketList) {
 //				if (users.getUsername().equals(joinUserName)) {
@@ -87,7 +81,7 @@ public class SocketServer extends Thread {
 //					break;
 //				}
 //			}
-				ResponseDto<?> joinrespDto = ResponseDto.<List<String>>builder().resource("join")
+				ResponseDto<?> joinrespDto = ResponseDto.<List<String>>builder().resource("join").username(username)
 						.body(new ArrayList<String>(chatRoomMap.keySet())).build();
 				sendResponse(joinrespDto);
 			break;

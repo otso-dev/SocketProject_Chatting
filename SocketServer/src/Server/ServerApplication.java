@@ -29,14 +29,14 @@ public class ServerApplication {
 		}catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			if(socketServer.getSocket() != null) {
-				try {
-					socketServer.getSocket().close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+//			if(socketServer.getSocket() != null) {
+//				try {
+//					socketServer.getSocket().close();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
 				
 		}
 		
