@@ -63,7 +63,7 @@ public class ClientRecive extends Thread{
 			if(responseDto.getStatus().equalsIgnoreCase("ok")) {
 				RequestDto<?> reqCreatejoin = RequestDto.<String>builder().resource("createjoin")
 						.username(Controller.getInstance().getChattingClient().getUsername())
-						.body(Controller.getInstance().getChattingClient().getRoomname())
+						.body(Controller.getInstance().getChattingClient().getCreateRoom())
 						.build();
 				sendRequest(reqCreatejoin);
 			}
@@ -88,7 +88,7 @@ public class ClientRecive extends Thread{
 		case "AllLeave":
 			System.out.println(responseDto);
 			Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(),"RoomPanel");
-			Controller.getInstance().getChattingClient().setRoomname(null);
+			Controller.getInstance().getChattingClient().setCreateRoom(null);
 			JOptionPane.showMessageDialog(null, "[" + responseDto.getUsername() + "]" +" 방장이 나갔습니다.","out",JOptionPane.YES_OPTION);
 			break;
 			

@@ -47,7 +47,13 @@ public class SocketServer extends Thread {
 		try {
 			reciveRequest();
 		} catch (SocketException e) {
-			System.out.println("채팅 프로그램을 종료하였습니다.");
+			try {
+				socket.close();
+				System.out.println("채팅 프로그램을 종료하였습니다.");
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -72,15 +78,15 @@ public class SocketServer extends Thread {
 		switch (requestDto.getResource()) {
 		case "join":
 			username = (String) requestDto.getUsername();
-			String joinUserName = (String) requestDto.getBody();
-			for (SocketServer users : socketList) {
-				if (users.getUsername().equals(joinUserName)) {
-					ResponseDto<?> joinErrorRespDto = ResponseDto.<String>builder().resource("error").status("join")
-							.body("해당 이름은 이미 존재합니다.").build();
-					sendResponse(joinErrorRespDto);
-					break;
-				}
-			}
+//			String joinUserName = (String) requestDto.getBody();
+//			for (SocketServer users : socketList) {
+//				if (users.getUsername().equals(joinUserName)) {
+//					ResponseDto<?> joinErrorRespDto = ResponseDto.<String>builder().resource("error").status("join")
+//							.body("해당 이름은 이미 존재합니다.").build();
+//					sendResponse(joinErrorRespDto);
+//					break;
+//				}
+//			}
 				ResponseDto<?> joinrespDto = ResponseDto.<List<String>>builder().resource("join")
 						.body(new ArrayList<String>(chatRoomMap.keySet())).build();
 				sendResponse(joinrespDto);
