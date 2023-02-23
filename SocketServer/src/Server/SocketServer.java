@@ -30,6 +30,7 @@ public class SocketServer extends Thread {
 	private Gson gson;
 	private String userId;
 	private String room;
+	private String enterRoomName;
 
 	private static List<String> roomName = new ArrayList<>();
 	private static Map<String, List<SocketServer>> chattingRoom = new HashMap<>();
@@ -67,40 +68,41 @@ public class SocketServer extends Thread {
 
 	private void RequestMapping(String request) throws IOException {
 		RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
-		String resource = requestDto.getResource() ;
-		switch(resource) {
-		case "join" :	
+		String resource = requestDto.getResource();
+		switch (resource) {
+		case "join":
 			userId = (String) requestDto.getBody();
 			break;
-		case "roomCreate":
-			room = (String) requestDto.getBody();	
-			if(chattingRoom.containsValue(room)) {
-				 ResponseDto<?> roomErrorResponseDto = ResponseDto.<String>builder()
-			                .resource("error")
-			                .body("이미 존재하는 방입니다.")
-			                .room(room)
-			                .userId(userId)
-			                .roomName(null)
-			                .build();
-				 
-			        sendResponse(roomErrorResponseDto);
-			}  else {
-			                chattingRoom.put(room, new ArrayList<>());
-			                ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder()
-			                        .resource("roomCreate")
-			                        .body(new ArrayList<String>(chattingRoom.keySet()))
-			                        .room(room)
-			                        .userId(userId)
-			                        .roomName(null)
-			                        .build();
-			                sendResponse(roomResponseDto);
-			                sendRoomListToAll();
-			        }
-							break;
-		case "roomEnter":
 			
+		case "roomCreate":
+			room = (String) requestDto.getBody();
+			if (!chattingRoom.containsKey(room)) {
+				chattingRoom.put(room, new ArrayList<>());
 			}
-	
+			chattingRoom.get(room).add(this);
+			ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder().resource("roomCreate")
+																				.body(new ArrayList<String>(chattingRoom.keySet()))
+																				.room(room).userId(userId).roomName(null)
+																				.build();
+			sendResponse(roomResponseDto);
+			sendToAll(roomResponseDto);
+			break;
+
+		case "sendMessage":
+			String message = (String) requestDto.getBody();
+			String enterRoomName = (String) requestDto.getRoomName();
+			String userId = (String) requestDto.getUserId();
+			
+			ResponseDto<?> sendMessageDto = ResponseDto.<String>builder().resource("sendMessage")
+																		 .body(message)
+																		 .userId(userId)
+																		 .roomName(enterRoomName)
+																		 .build();
+			sendToRoom(sendMessageDto, enterRoomName);
+			break;
+			
+		}
+
 	}
 
 	private void sendResponse(ResponseDto<?> responseDto) throws IOException {
@@ -116,11 +118,20 @@ public class SocketServer extends Thread {
 			socketServer.sendResponse(responseDto);
 		}
 	}
+	
+	private void sendToRoom(ResponseDto<?> responseDto, String roomname) throws IOException {
+	    List<SocketServer> socketServers = chattingRoom.get(roomname);
+	    if (socketServers != null) {
+	        for (SocketServer socketServer : socketServers) {
+	        	socketServer.sendResponse(responseDto);
+	        }
+	    }
+	}
 
-	private void sendRoomListToAll() throws IOException {
-		ResponseDto<?> responseDto = ResponseDto.<List<String>>builder().resource(null)
+	private void sendRoomListToAll(ResponseDto<?> responseDto) throws IOException {
+		ResponseDto<?> newRoomResponseDto = ResponseDto.<List<String>>builder().resource(null)
 				.body(new ArrayList<String>(chattingRoom.keySet())).build();
-		sendToAll(responseDto);
+		sendToAll(newRoomResponseDto);
 	}
 
 }

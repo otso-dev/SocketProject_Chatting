@@ -40,23 +40,19 @@ public class ClientRecive extends Thread{
 							RequestDto<?> requestDto = gson.fromJson(request, RequestDto.class);
 						 	requestDto.getBody();
 						 	break;
+						 	
 						case "roomCreate" :
 								RequestDto<?> createRequestDto = gson.fromJson(request, RequestDto.class);
-								Controller.getInstance().getChattingClient().getRoomModel().clear();  //clear로 비워줘야함
+								Controller.getInstance().getChattingClient().getRoomModel().clear(); 
 								Controller.getInstance().getChattingClient().getRoomModel().addElement("<채팅방 목록>");
 								Controller.getInstance().getChattingClient().getRoomModel().addAll((List<String>) createRequestDto.getBody());
 								Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
 								break;
-
-						
-						case "error" :
-								JOptionPane.showMessageDialog(null, "이미 존재하는 방입니다.", "Error", JOptionPane.ERROR_MESSAGE);
 						
 						case "sendMessage":
 								RequestDto<?> messageRequestDto = gson.fromJson(request, RequestDto.class);
-								Controller.getInstance().getChattingClient().getChatArea().append(responseDto.getBody() + "\n");
+								Controller.getInstance().getChattingClient().getChatArea().append(messageRequestDto.getBody() + "\n");
 								break;
-						
 						
 					
 					}

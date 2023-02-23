@@ -49,6 +49,7 @@ public class ChattingClient extends JFrame {
 	private DefaultListModel<String> roomModel;
 	
 	private String userId;
+	private String enterRoomName;
 	/**
 	 * Launch the application.
 	 */
@@ -109,7 +110,7 @@ public class ChattingClient extends JFrame {
 														 .resource("join")
 														 .userId(userId)
 														 .build();
-					sendRequest(requestDto);
+					sendRequest(requestDto);	
 						
 					ClientRecive clientRecive = new ClientRecive(socket);
 					clientRecive.start();
@@ -146,18 +147,17 @@ public class ChattingClient extends JFrame {
 				String roomEnter = roomList.getSelectedValue();
 				if(e.getClickCount() ==  2) {
 					if (roomEnter != null) {
+						enterRoomName = roomEnter;
 						RequestDto<?> roomJoinrequestDto = RequestDto.<String>builder().resource("roomJoin")
-																					   .body(null) //채팅방이름
+																					   .body(roomEnter) //채팅방이름
 																					   .room(null)
 																					   .userId(userId)
-																					   .roomName(null)
+																					   .roomName(roomEnter)
 																					   .build();
 						
 						sendRequest(roomJoinrequestDto);
-						
-						
+						mainCard.show(MainPanel, "ChattingPanel");
 					}
-					mainCard.show(MainPanel, "ChattingPanel");
 				}
 				
 			}
@@ -177,6 +177,7 @@ public class ChattingClient extends JFrame {
 				public void mouseClicked(MouseEvent e) {
 					String room = JOptionPane.showInputDialog( null, "방 제목을 여기에 입력", "방 생성하기",JOptionPane.INFORMATION_MESSAGE);
 					if (room != null && !room.trim().isEmpty()) {
+						
 						RequestDto<?> requestDto = RequestDto.<String>builder()
 								.resource("roomCreate")
 								.body(room)
@@ -209,7 +210,6 @@ public class ChattingClient extends JFrame {
 		ChattingPanel.add(ChattingScroll);
 		
 		JTextArea ChatArea = new JTextArea();
-		ChatArea.setEditable(false);
 		ChattingScroll.setViewportView(ChatArea);
 		
 		JButton RoomOutButton = new JButton("방 나가기");
@@ -267,14 +267,13 @@ public class ChattingClient extends JFrame {
 			RequestDto<?> messageReqDto = RequestDto.<String>builder()
 													.resource("sendMessage") //나중에 채워넣을것
 													.body(textField.getText())
-													.room(null)
-													.userId(null)
-													.roomName(null)
+													.userId(userId)
+													.roomName(enterRoomName)
 													.build();
 			sendRequest(messageReqDto);
+		}
 			textField.setText("");
 
-		}
 	}
 	
 	
