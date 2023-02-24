@@ -48,6 +48,7 @@ public class SocketServer extends Thread {
 	public void run() {
 		try {
 			reciveRequest();
+			System.out.println(socket);
 		} catch (SocketException e) {
 			if(socket != null) {
 				socketList.remove(this);

@@ -23,6 +23,7 @@ public class ServerApplication {
 				//System.out.println("연결확인");
 				socketServer = new SocketServer(socket);
 				socketServer.start();
+			
 			}
 		} catch (ConnectException e) {
 			System.out.println("접속해제");

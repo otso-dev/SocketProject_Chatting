@@ -31,7 +31,7 @@ import com.google.gson.Gson;
 
 import Chatting.Dto.RequestDto;
 import Chatting.controller.ClientRecive;
-import controller.Controller;
+import Chatting.controller.Controller;
 import lombok.Data;
 
 @Data
@@ -65,7 +65,6 @@ public class ChattingClient extends JFrame {
 				try {
 					Controller.getInstance();
 				} catch (Exception e) {
-					System.out.println("sysout");
 					e.printStackTrace();
 				}
 			}
@@ -116,14 +115,14 @@ public class ChattingClient extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 
 				try {
-					
+					String ip = "127.0.0.1";
+					int port = 9090;
+					socket = new Socket(ip, port);
+					ClientRecive clientRecive = new ClientRecive(socket);
+					clientRecive.start();
 					username = userNameField.getText();
 					if (!userNameField.getText().isBlank()) {
-						String ip = "127.0.0.1";
-						int port = 9090;
-						socket = new Socket(ip, port);
-						ClientRecive clientRecive = new ClientRecive(socket);
-						clientRecive.start();
+						
 						RequestDto<?> reqJoin = RequestDto.<String>builder().resource("join").body(username).build();
 						sendRequest(reqJoin);
 					}else {
