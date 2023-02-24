@@ -24,7 +24,6 @@ import lombok.Data;
 public class SocketServer extends Thread {
 
 	private Socket socket;
-	private List<SocketServer> socketList = new ArrayList<>();
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	private Gson gson;
@@ -32,7 +31,7 @@ public class SocketServer extends Thread {
 	private String room;
 	private String enterRoomName;
 
-	private static List<String> roomName = new ArrayList<>();
+	private static List<SocketServer> socketList = new ArrayList<>();
 	private static Map<String, List<SocketServer>> chattingRoom = new HashMap<>();
 
 	public SocketServer(Socket socket) {
@@ -82,12 +81,26 @@ public class SocketServer extends Thread {
 			chattingRoom.get(room).add(this);
 			ResponseDto<?> roomResponseDto = ResponseDto.<List<String>>builder().resource("roomCreate")
 																				.body(new ArrayList<String>(chattingRoom.keySet()))
-																				.room(room).userId(userId).roomName(null)
+																				.room(room)
+																				.userId(userId)
+																				.roomName(null)
 																				.build();
 			sendResponse(roomResponseDto);
 			sendToAll(roomResponseDto);
 			break;
-
+			
+		case "roomJoin" :
+			String joinRoomName = (String) requestDto.getRoomName();
+			String joinUser = (String) requestDto.getUserId();
+			
+			chattingRoom.get(joinRoomName).add(this);
+			ResponseDto<?> roomJoinDto = ResponseDto.<String>builder().resource("roomJoin")
+																	  .body(joinRoomName)
+																	  .userId(joinUser)
+																	  .roomName(joinRoomName)
+																	  .build();
+			sendToRoom(roomJoinDto, joinRoomName);
+			break;
 		case "sendMessage":
 			String message = (String) requestDto.getBody();
 			String enterRoomName = (String) requestDto.getRoomName();
@@ -126,7 +139,7 @@ public class SocketServer extends Thread {
 	        	socketServer.sendResponse(responseDto);
 	        }
 	    }
-	}
+	}	
 
 	private void sendRoomListToAll(ResponseDto<?> responseDto) throws IOException {
 		ResponseDto<?> newRoomResponseDto = ResponseDto.<List<String>>builder().resource(null)

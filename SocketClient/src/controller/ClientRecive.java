@@ -53,6 +53,11 @@ public class ClientRecive extends Thread{
 								RequestDto<?> messageRequestDto = gson.fromJson(request, RequestDto.class);
 								Controller.getInstance().getChattingClient().getChatArea().append(messageRequestDto.getBody() + "\n");
 								break;
+								
+						case "roomJoin" :
+								Controller.getInstance().getChattingClient().getRoomList();
+								Controller.getInstance().getChattingClient().getUserId();
+								break;
 						
 					
 					}

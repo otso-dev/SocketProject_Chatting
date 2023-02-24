@@ -47,14 +47,14 @@ public class ChattingClient extends JFrame {
 	private Gson gson;
 	private JList<String> roomList;
 	private DefaultListModel<String> roomModel;
-	
 	private String userId;
+	private String room;
 	private String enterRoomName;
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
+		EventQueue.invokeLater(new Runnable() {		
 			public void run() {
 				try {
 					Controller.getInstance();
@@ -209,8 +209,8 @@ public class ChattingClient extends JFrame {
 		ChattingScroll.setBounds(0, 50, 450, 640);
 		ChattingPanel.add(ChattingScroll);
 		
-		JTextArea ChatArea = new JTextArea();
-		ChattingScroll.setViewportView(ChatArea);
+		JTextArea textArea = new JTextArea();
+		ChattingScroll.setViewportView(textArea);
 		
 		JButton RoomOutButton = new JButton("방 나가기");
 		RoomOutButton.addMouseListener(new MouseAdapter() {
