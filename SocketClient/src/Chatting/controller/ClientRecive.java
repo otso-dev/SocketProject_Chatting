@@ -36,6 +36,7 @@ public class ClientRecive extends Thread{
 				reciveRequest();
 			}
 		} catch (IOException e) {
+			
 			e.printStackTrace();
 		}
 	}
@@ -51,15 +52,16 @@ public class ClientRecive extends Thread{
 			System.out.println(responseDto);
 			Controller.getInstance().getChattingClient().getLabelUsername().setText((String) responseDto.getUsername());
 			Controller.getInstance().getChattingClient().getRoomListModel().clear();
-			Controller.getInstance().getChattingClient().getRoomListModel().addElement("================<<방목록>>================");
+			Controller.getInstance().getChattingClient().getRoomListModel().addElement("============================<<방목록>>============================");
 			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
 			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
+			Controller.getInstance().getChattingClient().getMainCard().show(Controller.getInstance().getChattingClient().getMainPanel(), "RoomPanel");
 			break;
 		case "createRoom":
 			System.out.println(responseDto);
 			
 			Controller.getInstance().getChattingClient().getRoomListModel().clear();
-			Controller.getInstance().getChattingClient().getRoomListModel().addElement("================<<방목록>>================");
+			Controller.getInstance().getChattingClient().getRoomListModel().addElement("============================<<방목록>>============================");
 			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
 			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
 			if(responseDto.getStatus().equalsIgnoreCase("ok")) {
@@ -98,7 +100,7 @@ public class ClientRecive extends Thread{
 			
 		case "removeRoom":
 			Controller.getInstance().getChattingClient().getRoomListModel().clear();
-			Controller.getInstance().getChattingClient().getRoomListModel().addElement("================<<방목록>>================");
+			Controller.getInstance().getChattingClient().getRoomListModel().addElement("============================<<방목록>>============================");
 			Controller.getInstance().getChattingClient().getRoomListModel().addAll((List<String>)responseDto.getBody());
 			Controller.getInstance().getChattingClient().getRoomList().setSelectedIndex(0);
 			break;
