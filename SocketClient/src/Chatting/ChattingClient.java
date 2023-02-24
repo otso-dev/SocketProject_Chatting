@@ -23,22 +23,16 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import controller.Controller;
-import javax.swing.JTextField;
-import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
 import com.google.gson.Gson;
 
 import Chatting.Dto.RequestDto;
 import Chatting.controller.ClientRecive;
-import Chatting.controller.Controller;
+import controller.Controller;
 import lombok.Data;
-import javax.swing.JDesktopPane;
 
 @Data
 public class ChattingClient extends JFrame {
