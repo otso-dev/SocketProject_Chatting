@@ -23,10 +23,15 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import controller.Controller;
+import javax.swing.JTextField;
+import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import com.google.gson.Gson;
 
 import Chatting.Dto.RequestDto;
@@ -82,6 +87,7 @@ public class ChattingClient extends JFrame {
 		Image updateIconDm = iconImg.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
 		this.setIconImage(updateIconDm);
 		setTitle(Title);
+
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 480, 800);
@@ -139,6 +145,7 @@ public class ChattingClient extends JFrame {
 
 		});
 		JoinButton.setBounds(100, 374, 250, 70);
+
 		JoinPanel.add(JoinButton);
 		
 		JLabel JoinBackground = new JLabel(updateImage("./ImageFile/Instargram.jpg", 480, 800));
